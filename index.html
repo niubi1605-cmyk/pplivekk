@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#0a0c11">
-<title>M3U8 播放器 · 支持标记 · 多解码</title>
+<title>M3U8 播放器 · 支持标记 · 智能解码</title>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
 <style>
   :root{
@@ -69,6 +69,8 @@
   }
   .player:fullscreen{aspect-ratio:auto;width:100vw;height:100vh;border-radius:0;border:none;}
   .player:-webkit-full-screen{aspect-ratio:auto;width:100vw;height:100vh;border-radius:0;border:none;}
+  .player:-moz-full-screen{aspect-ratio:auto;width:100vw;height:100vh;border-radius:0;border:none;}
+  .player:-ms-fullscreen{aspect-ratio:auto;width:100vw;height:100vh;border-radius:0;border:none;}
   video{width:100%;height:100%;display:block;object-fit:contain;background:#000;}
 
   .big-play{
@@ -80,7 +82,12 @@
   }
   .big-play.show{opacity:1;}
 
-  .loading{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.4);z-index:5;}
+  .loading{
+    position:absolute;inset:0;display:grid;place-items:center;
+    background:rgba(0,0,0,.32);z-index:5;
+    transition:opacity .18s;
+  }
+  .loading[hidden]{display:none;}
   .spinner{
     width:34px;height:34px;border-radius:50%;
     border:3px solid rgba(255,255,255,.2);
@@ -149,7 +156,7 @@
   }
   select.speed option{background:#1b2130;color:#fff;}
 
-  /* ---------- 工具栏（旗子 + 解码 + 搜索） ---------- */
+  /* ---------- 工具栏 ---------- */
   .toolbar{display:flex;gap:8px;align-items:center;}
 
   .pill-btn{
@@ -245,15 +252,22 @@
   .menu button:hover{background:rgba(255,255,255,.08);}
   .menu button.danger{color:var(--danger);}
 
-  /* 解码菜单专用 */
+  /* 解码菜单 */
   .decoder-menu{
-    min-width:236px;max-width:88vw;
-    max-height:min(70vh,460px);overflow-y:auto;
+    min-width:246px;max-width:90vw;
+    max-height:min(72vh,480px);overflow-y:auto;
     -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
   }
   .menu-title{
     font-size:11px;font-weight:800;color:var(--muted);
     padding:8px 12px 6px;letter-spacing:.08em;
+    display:flex;justify-content:space-between;align-items:center;gap:6px;
+  }
+  .menu-title .badge{
+    font-size:10px;font-weight:700;color:var(--accent-2);
+    background:rgba(77,141,255,.15);border-radius:6px;padding:2px 6px;
+    letter-spacing:0;
   }
   .decoder-menu button.decoder-item{
     display:flex;flex-direction:column;align-items:flex-start;gap:2px;
@@ -271,6 +285,9 @@
   .decoder-item:disabled{opacity:.35;cursor:not-allowed;}
   .decoder-item:disabled:hover{background:none;}
   .d-check{font-size:12px;color:var(--accent-2);}
+  .menu-sep{
+    height:1px;background:var(--line);margin:6px 8px;
+  }
 
   /* ---------- Toast ---------- */
   .toast{
@@ -279,8 +296,8 @@
     color:var(--text);padding:10px 20px;border-radius:99px;
     font-size:13px;opacity:0;pointer-events:none;
     transition:opacity .25s,transform .25s;z-index:1000;
-    max-width:82vw;text-align:center;white-space:nowrap;
-    overflow:hidden;text-overflow:ellipsis;
+    max-width:82vw;text-align:center;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   }
   .toast.show{opacity:1;transform:translate(-50%,0);}
 </style>
@@ -289,14 +306,12 @@
 
 <div class="app">
 
-  <!-- 链接输入 -->
   <div class="urlbar">
     <input id="urlInput" type="url" inputmode="url" autocomplete="off" spellcheck="false"
            placeholder="输入 M3U8 / 视频链接…">
     <button id="loadBtn" class="btn-primary">播放</button>
   </div>
 
-  <!-- 播放器 -->
   <div class="player" id="player">
     <video id="video" playsinline webkit-playsinline x5-playsinline preload="metadata"></video>
 
@@ -325,7 +340,6 @@
     </div>
   </div>
 
-  <!-- 旗子 + 解码 + 搜索 -->
   <div class="toolbar">
     <button class="pill-btn flag-btn" id="flagBtn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -354,20 +368,17 @@
     </div>
   </div>
 
-  <!-- 标记列表 -->
   <div class="marks" id="marksList"></div>
   <div class="empty" id="emptyTip">还没有标记 · 点击上方 🏳 旗子即可标记当前时间</div>
 
 </div>
 
-<!-- 标记弹出菜单 -->
 <div class="menu" id="menu" hidden>
   <button data-act="seek">⏱ 跳转到此处</button>
   <button data-act="rename">✏️ 重命名</button>
   <button data-act="delete" class="danger">🗑 删除</button>
 </div>
 
-<!-- 解码器菜单 -->
 <div class="menu decoder-menu" id="decoderMenu" hidden></div>
 
 <div class="toast" id="toast"></div>
@@ -382,6 +393,7 @@
   var ICON_TRASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
   var ICON_PIP   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><rect x="12" y="12" width="8" height="6" rx="1" fill="currentColor" stroke="none"/></svg>';
   var ICON_FS    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
+  var ICON_FS_OUT= '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>';
 
   /* ============ 元素 ============ */
   var $ = function (id) { return document.getElementById(id); };
@@ -416,36 +428,90 @@
   pipBtn.innerHTML  = ICON_PIP;
   fsBtn.innerHTML   = ICON_FS;
 
+  /* ============ 环境检测（一次） ============ */
+  var ENV = (function () {
+    var ua = navigator.userAgent || '';
+    var platform = navigator.platform || '';
+    var maxTouch = navigator.maxTouchPoints || 0;
+    var isIOS = /iPad|iPhone|iPod/.test(ua) ||
+                (platform === 'MacIntel' && maxTouch > 1);
+    var isAndroid = /Android/i.test(ua);
+    var isSafari = /Safari/i.test(ua) && !/Chrome|CriOS|Chromium|Edg|OPR|FxiOS/i.test(ua);
+    var isChrome = /Chrome|CriOS/i.test(ua) && !/Edg|OPR/i.test(ua);
+    var isFirefox = /Firefox|FxiOS/i.test(ua);
+    var isMobile = isIOS || isAndroid || /Mobile|Tablet/i.test(ua);
+    var isDesktop = !isMobile;
+
+    var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    var effectiveType = conn ? (conn.effectiveType || '') : '';
+    var saveData = !!(conn && conn.saveData);
+    var downlink = (conn && typeof conn.downlink === 'number') ? conn.downlink : 0;
+
+    var cores = navigator.hardwareConcurrency || 4;
+    var memory = navigator.deviceMemory || 4;
+    var lowEnd = cores <= 2 || memory <= 2;
+    var highEnd = cores >= 8 && memory >= 4;
+
+    var nativeHls = video.canPlayType('application/vnd.apple.mpegurl') || '';
+    var nativeHlsOk = nativeHls === 'maybe' || nativeHls === 'probably';
+
+    var hlsJsOk = !!(window.Hls && window.Hls.isSupported && window.Hls.isSupported());
+
+    return {
+      ua: ua,
+      isIOS: isIOS,
+      isAndroid: isAndroid,
+      isSafari: isSafari,
+      isChrome: isChrome,
+      isFirefox: isFirefox,
+      isMobile: isMobile,
+      isDesktop: isDesktop,
+      effectiveType: effectiveType,
+      saveData: saveData,
+      downlink: downlink,
+      cores: cores,
+      memory: memory,
+      lowEnd: lowEnd,
+      highEnd: highEnd,
+      nativeHlsOk: nativeHlsOk,
+      hlsJsOk: hlsJsOk
+    };
+  })();
+
   /* ============ 解码器预设 ============ */
   var DECODERS = {
     auto: {
-      name: '自动（推荐）',
-      desc: '智能匹配，兼顾兼容性与流畅度',
-      hls: { enableWorker: true, lowLatencyMode: true }
+      name: '自动（智能推荐）',
+      desc: '根据设备、网络、浏览器自动选择最佳方案',
+      auto: true
     },
     hardware: {
       name: '硬件加速优先',
-      desc: '走 GPU 硬解，省电、发热低、适合高分片源',
+      desc: 'GPU 硬解，省电发热低，适合高分片源',
       hls: {
         enableWorker: true,
         lowLatencyMode: false,
         enableSoftwareAES: false,
         capLevelToPlayerSize: true,
-        progressive: false
+        progressive: false,
+        testBandwidth: true,
+        startLevel: -1,
+        abrEwmaDefaultEstimate: 800000
       }
     },
     software: {
       name: '软件解码',
-      desc: '关闭 Worker 在主线程解码，兼容怪编码',
+      desc: '主线程软解，兼容怪编码',
       hls: {
         enableWorker: false,
         lowLatencyMode: false,
         enableSoftwareAES: true,
-        progressive: true
+        progressive: true,
+        startLevel: -1
       }
     },
     lowlatency: {
-      name: '低延迟模式',
+      name: '低延迟直播',
       desc: '极限小缓冲，适合直播；网络差可能卡顿',
       hls: {
         enableWorker: true,
@@ -453,7 +519,9 @@
         maxBufferLength: 6,
         backBufferLength: 0,
         liveSyncDurationCount: 1,
-        maxLiveSyncPlaybackRate: 1.5
+        maxLiveSyncPlaybackRate: 1.5,
+        liveDurationInfinity: true,
+        startLevel: -1
       }
     },
     smooth: {
@@ -464,7 +532,8 @@
         lowLatencyMode: false,
         maxBufferLength: 120,
         maxMaxBufferLength: 300,
-        backBufferLength: 180
+        backBufferLength: 180,
+        startLevel: -1
       }
     },
     compat: {
@@ -478,24 +547,123 @@
         enableSoftwareAES: true,
         manifestLoadingMaxRetry: 8,
         levelLoadingMaxRetry: 8,
-        fragLoadingMaxRetry: 10
+        fragLoadingMaxRetry: 10,
+        manifestLoadingTimeOut: 20000,
+        levelLoadingTimeOut: 20000,
+        fragLoadingTimeOut: 30000,
+        startLevel: -1
+      }
+    },
+    lowpower: {
+      name: '低功耗省电',
+      desc: '降低缓冲与解码压力，省电省流量',
+      hls: {
+        enableWorker: true,
+        lowLatencyMode: false,
+        maxBufferLength: 30,
+        backBufferLength: 15,
+        maxMaxBufferLength: 60,
+        capLevelToPlayerSize: true,
+        abrBandWidthFactor: 0.6,
+        abrBandWidthUpFactor: 0.4,
+        startLevel: 0
+      }
+    },
+    mobile: {
+      name: '移动网络优化',
+      desc: '针对 4G/5G 优化，平衡清晰度与流量',
+      hls: {
+        enableWorker: true,
+        lowLatencyMode: false,
+        maxBufferLength: 45,
+        backBufferLength: 30,
+        capLevelToPlayerSize: true,
+        abrBandWidthFactor: 0.75,
+        abrBandWidthUpFactor: 0.5,
+        startLevel: -1
+      }
+    },
+    quality: {
+      name: '高画质优先',
+      desc: '锁定最高码率，画质党首选',
+      hls: {
+        enableWorker: true,
+        lowLatencyMode: false,
+        maxBufferLength: 90,
+        backBufferLength: 120,
+        capLevelToPlayerSize: false,
+        startLevel: -1,
+        abrBandWidthFactor: 1,
+        abrBandWidthUpFactor: 0.9
       }
     },
     native: {
       name: '浏览器原生解码',
-      desc: '直接交给浏览器内核，Safari / iOS 效果最佳',
+      desc: '交给浏览器内核，Safari / iOS 效果最佳',
       native: true
     }
   };
 
+  var DECODER_ORDER = [
+    'auto', 'hardware', 'software', 'lowlatency', 'smooth',
+    'compat', 'lowpower', 'mobile', 'quality', 'native'
+  ];
+
   var currentDecoder = 'auto';
   try {
-    var savedDecoder = localStorage.getItem('m3u8_player_decoder');
+    var savedDecoder = localStorage.getItem('m3u8_player_decoder_v2');
     if (savedDecoder && DECODERS[savedDecoder]) currentDecoder = savedDecoder;
   } catch (e) {}
 
-  function hlsJsAvailable() {
-    return !!(window.Hls && window.Hls.isSupported && window.Hls.isSupported());
+  /* ============ 智能自动选择算法 ============ */
+  function pickAutoDecoder() {
+    // iOS / Safari：原生 HLS 最优
+    if (ENV.isIOS) {
+      return ENV.nativeHlsOk ? 'native' : 'compat';
+    }
+    if (ENV.isSafari && ENV.isDesktop) {
+      return ENV.nativeHlsOk ? 'native' : (ENV.hlsJsOk ? 'hardware' : 'compat');
+    }
+
+    // 无 hls.js：只能原生
+    if (!ENV.hlsJsOk) {
+      return ENV.nativeHlsOk ? 'native' : 'compat';
+    }
+
+    // 省流量 / 极慢网络
+    if (ENV.saveData) return 'lowpower';
+    if (ENV.effectiveType === 'slow-2g' || ENV.effectiveType === '2g') return 'lowpower';
+
+    // 低端设备 → 兼容
+    if (ENV.lowEnd) return 'compat';
+
+    // 3G 网络
+    if (ENV.effectiveType === '3g') {
+      return ENV.isMobile ? 'mobile' : 'compat';
+    }
+
+    // 移动设备
+    if (ENV.isMobile) {
+      if (ENV.downlink && ENV.downlink < 1.5) return 'lowpower';
+      if (ENV.highEnd && (!ENV.downlink || ENV.downlink > 5)) return 'hardware';
+      return 'mobile';
+    }
+
+    // 桌面
+    if (ENV.highEnd && (ENV.effectiveType === '4g' || !ENV.effectiveType)) {
+      return 'hardware';
+    }
+    if (ENV.effectiveType === '4g') return 'smooth';
+
+    return 'hardware';
+  }
+
+  function resolveDecoderKey(key) {
+    if (DECODERS[key] && DECODERS[key].auto) {
+      var picked = pickAutoDecoder();
+      return DECODERS[picked] ? picked : 'compat';
+    }
+    return DECODERS[key] ? key : 'compat';
   }
 
   /* ============ 工具函数 ============ */
@@ -550,7 +718,6 @@
     el.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   }
 
-  /* 通用弹层定位 */
   function openPopupNear(el, anchor) {
     el.hidden = false;
     el.style.visibility = 'hidden';
@@ -575,6 +742,7 @@
   var hasSource = false;
   var hls = null;
   var retryCount = 0;
+  var wasPlayingBeforeLoad = false;
 
   function saveMarks() {
     if (!currentUrl) return;
@@ -583,9 +751,35 @@
     try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) {}
   }
 
-  /* ============ 加载视频（核心：按解码器分流） ============ */
-  function setLoading(on) { loading.hidden = !on; }
+  /* ============ Loading 防抖 ============ */
+  var loadingTimer = null;
+  var loadingShown = false;
 
+  function scheduleLoading(delay) {
+    if (loadingShown) return;
+    clearTimeout(loadingTimer);
+    loadingTimer = setTimeout(function () {
+      // 只有视频确实没准备好、且没有处于暂停态时才显示
+      if (video.readyState < 3 && !video.paused) {
+        loadingShown = true;
+        loading.hidden = false;
+      }
+    }, delay || 400);
+  }
+
+  function showLoadingNow() {
+    clearTimeout(loadingTimer);
+    loadingShown = true;
+    loading.hidden = false;
+  }
+
+  function hideLoading() {
+    clearTimeout(loadingTimer);
+    loadingShown = false;
+    loading.hidden = true;
+  }
+
+  /* ============ 加载视频 ============ */
   function loadStream(rawUrl, resumeAt) {
     var url = (rawUrl || '').trim();
     if (!url) { toast('请输入 M3U8 链接'); return; }
@@ -598,10 +792,12 @@
     var startTime = (typeof resumeAt === 'number' && isFinite(resumeAt) && resumeAt > 0)
       ? resumeAt : 0;
 
-    if (hls) { hls.destroy(); hls = null; }
+    wasPlayingBeforeLoad = !video.paused;
+
+    if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
     retryCount = 0;
-    setLoading(true);
     hasSource = true;
+    showLoadingNow();
 
     try {
       video.pause();
@@ -609,20 +805,30 @@
       video.load();
     } catch (e) {}
 
-    var decoder = DECODERS[currentDecoder] || DECODERS.auto;
+    var decoderKey = resolveDecoderKey(currentDecoder);
+    var decoder = DECODERS[decoderKey] || DECODERS.compat;
     var isDirectFile = /\.(mp4|webm|ogg|ogv|mov|m4v)(\?|#|$)/i.test(url);
-    var useHlsJs = !isDirectFile && hlsJsAvailable() && !decoder.native;
+    var useHlsJs = !isDirectFile && ENV.hlsJsOk && !decoder.native;
+
+    // 若是 auto，提示实际选中的解码器
+    if (currentDecoder === 'auto' && !isDirectFile) {
+      toast('自动解码 → ' + decoder.name);
+    }
 
     if (useHlsJs) {
-      /* ---- HLS.js 软件/硬件解码管线 ---- */
+      /* ---- HLS.js 管线 ---- */
       var cfg = {
         enableWorker: true,
-        lowLatencyMode: true,
+        lowLatencyMode: false,
         backBufferLength: 90,
         maxBufferLength: 60,
         manifestLoadingMaxRetry: 4,
         levelLoadingMaxRetry: 4,
-        fragLoadingMaxRetry: 6
+        fragLoadingMaxRetry: 6,
+        manifestLoadingTimeOut: 15000,
+        levelLoadingTimeOut: 15000,
+        fragLoadingTimeOut: 20000,
+        startLevel: -1
       };
       if (decoder.hls) {
         for (var k in decoder.hls) {
@@ -635,7 +841,7 @@
       hls.attachMedia(video);
 
       hls.on(Hls.Events.MANIFEST_PARSED, function () {
-        setLoading(false);
+        hideLoading();
         if (startTime > 0) { try { video.currentTime = startTime; } catch (e) {} }
         video.play().catch(function () {});
       });
@@ -643,22 +849,24 @@
       hls.on(Hls.Events.ERROR, function (evt, data) {
         if (!data.fatal) return;
         if (data.type === Hls.ErrorTypes.NETWORK_ERROR && retryCount < 3) {
-          retryCount++; hls.startLoad(); return;
+          retryCount++; try { hls.startLoad(); } catch (e) {}
+          return;
         }
         if (data.type === Hls.ErrorTypes.MEDIA_ERROR && retryCount < 3) {
-          retryCount++; hls.recoverMediaError(); return;
+          retryCount++; try { hls.recoverMediaError(); } catch (e) {}
+          return;
         }
-        setLoading(false);
-        toast('播放失败：' + (data.details || '未知错误') + '，可试试切换解码');
+        hideLoading();
+        toast('播放失败：' + (data.details || '未知错误') + '，可切换解码');
       });
 
-    } else if (video.canPlayType('application/vnd.apple.mpegurl') || isDirectFile) {
-      /* ---- 浏览器原生解码管线 ---- */
+    } else if (ENV.nativeHlsOk || isDirectFile) {
+      /* ---- 原生解码管线 ---- */
       video.src = url;
 
       var onMeta = function () {
         video.removeEventListener('loadedmetadata', onMeta);
-        setLoading(false);
+        hideLoading();
         if (startTime > 0) { try { video.currentTime = startTime; } catch (e) {} }
         video.play().catch(function () {});
       };
@@ -666,14 +874,14 @@
 
       var onErr = function () {
         video.removeEventListener('error', onErr);
-        setLoading(false);
-        toast('原生解码失败，请切换其他解码方案');
+        hideLoading();
+        toast('原生解码失败，请点击「解码」切换');
       };
       video.addEventListener('error', onErr);
 
     } else {
-      setLoading(false);
-      toast('当前浏览器不支持该解码方案，请点击「解码」切换');
+      hideLoading();
+      toast('当前环境不支持该解码方案，请点击「解码」切换');
     }
   }
 
@@ -690,35 +898,62 @@
 
   /* ============ 解码器切换 ============ */
   function updateDecoderBtn() {
-    var d = DECODERS[currentDecoder];
-    decoderBtn.title = '当前解码：' + d.name + '（点击切换）';
+    var d = DECODERS[currentDecoder] || DECODERS.auto;
+    var title = '当前解码：' + d.name;
+    if (d.auto) {
+      var realKey = resolveDecoderKey('auto');
+      title = '自动解码 → ' + (DECODERS[realKey] ? DECODERS[realKey].name : '兼容模式');
+    }
+    decoderBtn.title = title + '（点击切换）';
   }
 
   function renderDecoderMenu() {
     decoderMenu.innerHTML = '';
 
+    var realKey = resolveDecoderKey(currentDecoder);
+
     var title = document.createElement('div');
     title.className = 'menu-title';
-    title.textContent = '选择解码方案';
+    title.innerHTML = '<span>选择解码方案</span>' +
+      (ENV.hlsJsOk ? '<span class="badge">HLS.js 已就绪</span>'
+                   : '<span class="badge">仅原生</span>');
     decoderMenu.appendChild(title);
 
-    var hlsOk = hlsJsAvailable();
-
-    Object.keys(DECODERS).forEach(function (key) {
+    DECODER_ORDER.forEach(function (key) {
       var d = DECODERS[key];
+      if (!d) return;
+
       var b = document.createElement('button');
       b.type = 'button';
       b.dataset.decoder = key;
       b.className = 'decoder-item' + (key === currentDecoder ? ' active' : '');
 
-      if (!hlsOk && !d.native) b.disabled = true;
+      var disabled = false;
+      if (!d.native && !ENV.hlsJsOk) disabled = true;
+      if (d.native && !ENV.nativeHlsOk && !/\.(mp4|webm|ogg|ogv|mov|m4v)/i.test(currentUrl || '')) {
+        // 原生 HLS 在当前浏览器不可用时，禁用 native（但仍允许用于直链视频）
+        disabled = true;
+      }
+      if (disabled) b.disabled = true;
 
       var nameHtml = '<span class="d-name">' + d.name;
       if (key === currentDecoder) nameHtml += '<span class="d-check">✓</span>';
       nameHtml += '</span>';
 
-      b.innerHTML = nameHtml + '<span class="d-desc">' + d.desc + '</span>';
+      var desc = d.desc;
+      if (d.auto && realKey !== 'auto') {
+        desc = '当前实际使用：' + (DECODERS[realKey] ? DECODERS[realKey].name : '兼容模式');
+      }
+
+      b.innerHTML = nameHtml + '<span class="d-desc">' + desc + '</span>';
       decoderMenu.appendChild(b);
+
+      // 在 auto 和 hardware 之间加分隔线
+      if (key === 'auto') {
+        var sep = document.createElement('div');
+        sep.className = 'menu-sep';
+        decoderMenu.appendChild(sep);
+      }
     });
   }
 
@@ -735,18 +970,24 @@
     var key = btn.dataset.decoder;
     decoderMenu.hidden = true;
 
-    if (key === currentDecoder) { toast('当前已是「' + DECODERS[key].name + '」'); return; }
+    if (key === currentDecoder) {
+      var realKey = resolveDecoderKey(key);
+      toast('当前已是「' + DECODERS[key].name + '」' +
+            (DECODERS[key].auto ? '（实际：' + DECODERS[realKey].name + '）' : ''));
+      return;
+    }
 
     currentDecoder = key;
-    try { localStorage.setItem('m3u8_player_decoder', key); } catch (e) {}
+    try { localStorage.setItem('m3u8_player_decoder_v2', key); } catch (e) {}
     updateDecoderBtn();
 
     decoderBtn.classList.add('pulse');
     setTimeout(function () { decoderBtn.classList.remove('pulse'); }, 420);
 
-    toast('解码已切换：' + DECODERS[key].name);
+    var realKey = resolveDecoderKey(key);
+    toast('已切换：' + DECODERS[key].name +
+          (DECODERS[key].auto ? '（实际：' + DECODERS[realKey].name + '）' : ''));
 
-    /* 用新解码器重载当前流，并尽量回到原位置 */
     if (currentUrl) {
       var resume = (hasSource && isFinite(video.currentTime)) ? video.currentTime : 0;
       loadStream(currentUrl, resume);
@@ -771,17 +1012,28 @@
     showControls();
   });
 
-  playBtn.addEventListener('click', function (e) { e.stopPropagation(); togglePlay(); });
+  playBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    togglePlay();
+  });
 
   video.addEventListener('play', function () { syncPlayIcon(); showControls(); });
   video.addEventListener('pause', function () { syncPlayIcon(); showControls(); });
-  video.addEventListener('waiting', function () { setLoading(true); });
-  video.addEventListener('playing', function () { setLoading(false); });
-  video.addEventListener('canplay', function () { setLoading(false); });
+
+  /* ---- Loading 事件（延迟显示，播放中不再闪烁） ---- */
+  video.addEventListener('waiting', function () { scheduleLoading(450); });
+  video.addEventListener('stalled', function () { scheduleLoading(600); });
+
+  video.addEventListener('playing', hideLoading);
+  video.addEventListener('canplay', hideLoading);
+  video.addEventListener('canplaythrough', hideLoading);
+  video.addEventListener('seeked', hideLoading);
+  video.addEventListener('loadeddata', hideLoading);
   video.addEventListener('loadedmetadata', function () {
-    setLoading(false);
+    hideLoading();
     renderBarMarks();
     updateTimeLabel();
+    updateFsIcon();
   });
   video.addEventListener('durationchange', renderBarMarks);
 
@@ -833,7 +1085,10 @@
     progress.classList.remove('dragging');
     var p = pctFromEvent(e);
     if (isFinite(video.duration) && video.duration > 0) {
-      video.currentTime = Math.min(p * video.duration, Math.max(0, video.duration - 0.05));
+      try {
+        video.currentTime = Math.min(p * video.duration, Math.max(0, video.duration - 0.05));
+      } catch (err) {}
+      scheduleLoading(300);
     }
     showControls();
   }
@@ -907,34 +1162,151 @@
   });
 
   /* ============ 画中画 ============ */
-  if (!document.pictureInPictureEnabled) pipBtn.style.display = 'none';
-  pipBtn.addEventListener('click', function () {
-    if (!document.pictureInPictureEnabled) return;
-    if (document.pictureInPictureElement) document.exitPictureInPicture();
-    else video.requestPictureInPicture().catch(function () { toast('无法开启画中画'); });
+  if (!document.pictureInPictureEnabled && !video.webkitSetPresentationMode) {
+    pipBtn.style.display = 'none';
+  }
+  pipBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    // 标准 PiP
+    if (document.pictureInPictureEnabled) {
+      if (document.pictureInPictureElement) {
+        document.exitPictureInPicture().catch(function () {});
+      } else {
+        video.requestPictureInPicture().catch(function () {
+          toast('无法开启画中画');
+        });
+      }
+      return;
+    }
+    // iOS Safari 的 PiP
+    if (video.webkitSetPresentationMode) {
+      try {
+        var mode = video.webkitPresentationMode === 'picture-in-picture'
+          ? 'inline' : 'picture-in-picture';
+        video.webkitSetPresentationMode(mode);
+      } catch (err) {
+        toast('无法开启画中画');
+      }
+      return;
+    }
+    toast('当前浏览器不支持画中画');
   });
 
-  /* ============ 全屏 / 横屏 ============ */
+  /* ============ 全屏 / 横屏（重写修复） ============ */
+  function isFullscreen() {
+    return !!(document.fullscreenElement ||
+              document.webkitFullscreenElement ||
+              document.mozFullScreenElement ||
+              document.msFullscreenElement);
+  }
+
+  function updateFsIcon() {
+    var isFull = isFullscreen();
+    fsBtn.innerHTML = isFull ? ICON_FS_OUT : ICON_FS;
+    fsBtn.title = isFull ? '退出全屏' : '全屏 / 横屏';
+  }
+
+  function onEnterFullscreenSuccess() {
+    try {
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(function () {});
+      }
+    } catch (e) {}
+  }
+
+  function tryVideoElementFullscreen() {
+    // iOS Safari 的 video 全屏
+    if (video.webkitEnterFullscreen) {
+      try {
+        video.webkitEnterFullscreen();
+        return true;
+      } catch (e) {}
+    }
+    return false;
+  }
+
+  function toggleFullscreen(e) {
+    if (e && e.stopPropagation) e.stopPropagation();
+
+    if (!isFullscreen()) {
+      var el = player;
+      var req = el.requestFullscreen ||
+                el.webkitRequestFullscreen ||
+                el.webkitRequestFullScreen ||
+                el.mozRequestFullScreen ||
+                el.msRequestFullscreen;
+
+      if (req) {
+        try {
+          var p = req.call(el);
+          if (p && typeof p.then === 'function') {
+            p.then(onEnterFullscreenSuccess).catch(function () {
+              // 标准 API 失败 → 尝试 video 全屏
+              if (!tryVideoElementFullscreen()) {
+                toast('当前浏览器不支持全屏');
+              }
+            });
+          } else {
+            // 旧版同步 API
+            onEnterFullscreenSuccess();
+          }
+        } catch (err) {
+          if (!tryVideoElementFullscreen()) {
+            toast('无法进入全屏');
+          }
+        }
+      } else {
+        if (!tryVideoElementFullscreen()) {
+          toast('当前浏览器不支持全屏');
+        }
+      }
+    } else {
+      // 退出全屏
+      try {
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        }
+      } catch (e) {}
+
+      var exit = document.exitFullscreen ||
+                 document.webkitExitFullscreen ||
+                 document.webkitCancelFullScreen ||
+                 document.mozCancelFullScreen ||
+                 document.msExitFullscreen;
+      if (exit) {
+        try {
+          var p2 = exit.call(document);
+          if (p2 && typeof p2.catch === 'function') p2.catch(function () {});
+        } catch (e) {}
+      }
+
+      // iOS Safari 全屏退出
+      if (video.webkitDisplayingFullscreen) {
+        try { video.webkitExitFullscreen(); } catch (e) {}
+      }
+    }
+
+    // 延迟更新图标（等待全屏状态真正切换）
+    setTimeout(updateFsIcon, 120);
+  }
+
   fsBtn.addEventListener('click', toggleFullscreen);
 
-  function toggleFullscreen() {
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-      var p;
-      if (player.requestFullscreen) p = player.requestFullscreen();
-      else if (player.webkitRequestFullscreen) p = player.webkitRequestFullscreen();
-      else if (video.webkitEnterFullscreen) { video.webkitEnterFullscreen(); return; }
-
-      Promise.resolve(p).then(function () {
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock('landscape').catch(function () {});
+  // 监听全屏状态变化
+  ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange']
+    .forEach(function (ev) {
+      document.addEventListener(ev, function () {
+        updateFsIcon();
+        // 全屏后如果之前在播放，保持播放
+        if (isFullscreen() && wasPlayingBeforeLoad && video.paused) {
+          video.play().catch(function () {});
         }
-      }).catch(function () { toast('无法进入全屏'); });
-    } else {
-      try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {}
-      if (document.exitFullscreen) document.exitFullscreen().catch(function () {});
-      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-    }
-  }
+      });
+    });
+
+  // iOS video 全屏事件
+  video.addEventListener('webkitbeginfullscreen', updateFsIcon);
+  video.addEventListener('webkitendfullscreen', updateFsIcon);
 
   /* ============ 标记：增删改查 ============ */
   function renderBarMarks() {
@@ -1128,15 +1500,23 @@
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
 
     if (e.code === 'Space') { e.preventDefault(); togglePlay(); showControls(); }
-    else if (e.code === 'ArrowRight') { video.currentTime = Math.min(video.currentTime + 5, video.duration || 0); showControls(); }
-    else if (e.code === 'ArrowLeft') { video.currentTime = Math.max(video.currentTime - 5, 0); showControls(); }
+    else if (e.code === 'ArrowRight') {
+      video.currentTime = Math.min(video.currentTime + 5, video.duration || 0);
+      showControls();
+    }
+    else if (e.code === 'ArrowLeft') {
+      video.currentTime = Math.max(video.currentTime - 5, 0);
+      showControls();
+    }
     else if (e.key === 'm' || e.key === 'M') { addMark(); }
+    else if (e.key === 'f' || e.key === 'F') { toggleFullscreen(); }
   });
 
   /* ============ 初始化 ============ */
   syncPlayIcon();
   renderMarks();
   updateDecoderBtn();
+  updateFsIcon();
   showControls();
 
   var lastUrl = '';
@@ -1146,4 +1526,4 @@
 })();
 </script>
 </body>
-</html>
+      </html>
