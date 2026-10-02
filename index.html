@@ -4,47 +4,40 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#08090d">
-<title>VodCore 播放器 · 重置版 · 强化下载</title>
+<meta name="referrer" content="no-referrer">
+<title>VodCore 播放器 · 防盗链修复版</title>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
 <style>
-  :root{
-    --bg:#08090d;--panel:#111521;--panel-2:#171c2b;--line:#232a3d;
-    --text:#eef1f8;--muted:#828ba3;--brand:#4d8dff;--brand-2:#7db0ff;
-    --gold:#ffd166;--danger:#ff5f5f;--ok:#3ddc97;
-  }
+  :root{--bg:#08090d;--panel:#111521;--panel-2:#171c2b;--line:#232a3d;--text:#eef1f8;--muted:#828ba3;
+    --brand:#4d8dff;--brand-2:#7db0ff;--gold:#ffd166;--danger:#ff5f5f;--ok:#3ddc97;}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;height:100%;}
-  body{
-    background:radial-gradient(1100px 560px at 50% -14%,#141d33 0%,var(--bg) 60%);
-    color:var(--text);
+  body{background:radial-gradient(1100px 560px at 50% -14%,#141d33 0%,var(--bg) 60%);color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
-    font-size:14px;-webkit-font-smoothing:antialiased;overscroll-behavior-y:contain;
-  }
+    font-size:14px;-webkit-font-smoothing:antialiased;overscroll-behavior-y:contain;}
   .app{max-width:980px;margin:0 auto;padding:12px 12px calc(30px + env(safe-area-inset-bottom));
     display:flex;flex-direction:column;gap:12px;}
   .brand{display:flex;align-items:center;gap:10px;padding:2px 2px 0;}
-  .brand-logo{width:30px;height:30px;border-radius:9px;
-    background:linear-gradient(135deg,var(--brand),#8f6bff);display:grid;place-items:center;
-    box-shadow:0 4px 14px rgba(77,141,255,.35);flex:none;}
+  .brand-logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#8f6bff);
+    display:grid;place-items:center;box-shadow:0 4px 14px rgba(77,141,255,.35);flex:none;}
   .brand-logo svg{width:17px;height:17px;color:#fff;}
-  .brand-name{font-weight:800;font-size:15px;letter-spacing:.02em;}
+  .brand-name{font-weight:800;font-size:15px;}
   .brand-name small{color:var(--muted);font-weight:600;font-size:11px;margin-left:5px;}
   .brand-badge{margin-left:auto;font-size:10.5px;font-weight:700;color:var(--ok);
-    background:rgba(61,220,151,.12);border:1px solid rgba(61,220,151,.3);
-    padding:3px 8px;border-radius:99px;display:flex;align-items:center;gap:5px;}
+    background:rgba(61,220,151,.12);border:1px solid rgba(61,220,151,.3);padding:3px 8px;border-radius:99px;
+    display:flex;align-items:center;gap:5px;}
   .brand-badge i{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok);}
   .urlbar{display:flex;gap:8px;}
-  .urlbar input{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);
-    border-radius:12px;color:var(--text);padding:13px 14px;font-size:15px;outline:none;
-    transition:border-color .15s,box-shadow .15s;}
+  .urlbar input{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    color:var(--text);padding:13px 14px;font-size:15px;outline:none;transition:border-color .15s,box-shadow .15s;}
   .urlbar input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(77,141,255,.14);}
   .urlbar input::placeholder{color:var(--muted);}
-  .btn-go{flex:none;border:none;border-radius:12px;padding:0 22px;font-size:15px;font-weight:700;
-    color:#fff;background:linear-gradient(180deg,var(--brand-2),var(--brand));cursor:pointer;
+  .btn-go{flex:none;border:none;border-radius:12px;padding:0 22px;font-size:15px;font-weight:700;color:#fff;
+    background:linear-gradient(180deg,var(--brand-2),var(--brand));cursor:pointer;
     transition:transform .1s,filter .15s;box-shadow:0 4px 16px rgba(77,141,255,.3);}
   .btn-go:active{transform:scale(.97);filter:brightness(.92);}
-  .player{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:14px;
-    overflow:hidden;border:1px solid var(--line);user-select:none;-webkit-user-select:none;isolation:isolate;}
+  .player{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:14px;overflow:hidden;
+    border:1px solid var(--line);user-select:none;-webkit-user-select:none;isolation:isolate;}
   .player:fullscreen,.player:-webkit-full-screen{aspect-ratio:auto;width:100vw;height:100vh;border-radius:0;border:none;}
   video{width:100%;height:100%;display:block;object-fit:contain;background:#000;}
   .big-play{position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.92);
@@ -52,16 +45,15 @@
     background:radial-gradient(circle at center,rgba(0,0,0,.35),transparent 62%);
     filter:drop-shadow(0 4px 18px rgba(0,0,0,.7));}
   .big-play.show{opacity:1;}
-  .loading{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.32);
-    z-index:5;opacity:0;transition:opacity .18s;pointer-events:none;}
+  .loading{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.32);z-index:5;
+    opacity:0;transition:opacity .18s;pointer-events:none;}
   .loading.show{opacity:1;pointer-events:auto;}
   .spinner{width:36px;height:36px;border-radius:50%;border:3px solid rgba(255,255,255,.18);
     border-top-color:var(--brand-2);animation:spin .75s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
   .core-tag{position:absolute;top:10px;left:10px;z-index:6;display:flex;align-items:center;gap:6px;
-    background:rgba(8,9,13,.72);border:1px solid rgba(255,255,255,.1);border-radius:99px;
-    padding:4px 10px;font-size:10.5px;font-weight:700;color:var(--text);
-    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);pointer-events:none;
+    background:rgba(8,9,13,.72);border:1px solid rgba(255,255,255,.1);border-radius:99px;padding:4px 10px;
+    font-size:10.5px;font-weight:700;color:var(--text);backdrop-filter:blur(8px);pointer-events:none;
     opacity:0;transition:opacity .25s;}
   .core-tag.show{opacity:1;}
   .core-tag i{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 7px var(--ok);flex:none;}
@@ -74,29 +66,28 @@
   .track{right:0;background:rgba(255,255,255,.18);}
   .bar-buffer{background:rgba(255,255,255,.3);width:0;}
   .bar-played{background:linear-gradient(90deg,var(--brand),var(--brand-2));width:0;box-shadow:0 0 10px rgba(77,141,255,.6);}
-  .bar-thumb{position:absolute;top:50%;left:0;width:14px;height:14px;border-radius:50%;
-    background:#fff;transform:translate(-50%,-50%);box-shadow:0 0 0 3px rgba(77,141,255,.35);
-    opacity:0;transition:opacity .15s;}
+  .bar-thumb{position:absolute;top:50%;left:0;width:14px;height:14px;border-radius:50%;background:#fff;
+    transform:translate(-50%,-50%);box-shadow:0 0 0 3px rgba(77,141,255,.35);opacity:0;transition:opacity .15s;}
   .player:hover .bar-thumb,.progress.dragging .bar-thumb{opacity:1;}
   .bar-marks{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:16px;pointer-events:none;}
   .bar-marks i{position:absolute;top:0;width:2px;height:16px;border-radius:2px;background:var(--gold);
     transform:translateX(-1px);box-shadow:0 0 7px rgba(255,209,102,.85);}
   .ctrl-row{display:flex;align-items:center;gap:4px;margin-top:2px;}
-  .icon-btn{background:transparent;border:none;color:#fff;cursor:pointer;width:38px;height:38px;
-    border-radius:10px;display:grid;place-items:center;transition:background .15s;flex:none;}
+  .icon-btn{background:transparent;border:none;color:#fff;cursor:pointer;width:38px;height:38px;border-radius:10px;
+    display:grid;place-items:center;transition:background .15s;flex:none;}
   .icon-btn:hover{background:rgba(255,255,255,.13);}
   .icon-btn svg{width:20px;height:20px;}
   .time{font-variant-numeric:tabular-nums;font-size:12px;color:rgba(255,255,255,.85);margin-left:4px;white-space:nowrap;}
   .grow{flex:1;}
-  select.speed{-webkit-appearance:none;appearance:none;background:rgba(255,255,255,.13);color:#fff;
-    border:none;border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700;cursor:pointer;
-    outline:none;font-variant-numeric:tabular-nums;font-family:inherit;}
+  select.speed{-webkit-appearance:none;appearance:none;background:rgba(255,255,255,.13);color:#fff;border:none;
+    border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700;cursor:pointer;outline:none;
+    font-variant-numeric:tabular-nums;font-family:inherit;}
   select.speed option{background:#171c2b;color:#fff;}
-  .toolbar{display:flex;gap:8px;align-items:center;}
+  .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
   .pill{flex:none;display:inline-flex;align-items:center;gap:6px;padding:11px 13px;border-radius:12px;
     border:1px solid transparent;font-size:13px;font-weight:700;cursor:pointer;
-    user-select:none;-webkit-user-select:none;white-space:nowrap;
-    transition:transform .1s,background .15s,box-shadow .2s;font-family:inherit;}
+    user-select:none;-webkit-user-select:none;white-space:nowrap;transition:transform .1s,background .15s,box-shadow .2s;
+    font-family:inherit;}
   .pill:active{transform:scale(.95);}
   .pill svg{width:16px;height:16px;flex:none;}
   .pill-flag{color:var(--gold);border-color:rgba(255,209,102,.36);
@@ -105,8 +96,10 @@
   .pill-decoder{color:var(--brand-2);border-color:rgba(77,141,255,.4);
     background:linear-gradient(180deg,rgba(77,141,255,.2),rgba(77,141,255,.06));}
   .pill-decoder.pulse{box-shadow:0 0 0 6px rgba(77,141,255,.2);}
+  .pill-diag{color:#c084fc;border-color:rgba(192,132,252,.4);
+    background:linear-gradient(180deg,rgba(192,132,252,.2),rgba(192,132,252,.06));}
   .search{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:var(--panel);
-    border:1px solid var(--line);border-radius:12px;padding:0 12px;height:44px;transition:border-color .15s;}
+    border:1px solid var(--line);border-radius:12px;padding:0 12px;height:44px;transition:border-color .15s;min-width:160px;}
   .search:focus-within{border-color:var(--brand);}
   .search svg{width:16px;height:16px;color:var(--muted);flex:none;}
   .search input{flex:1;min-width:0;background:none;border:none;outline:none;color:var(--text);font-size:14px;height:100%;}
@@ -128,63 +121,56 @@
   .m-del svg{width:17px;height:17px;}
   .empty{text-align:center;color:var(--muted);font-size:13px;padding:26px 16px;
     border:1px dashed var(--line);border-radius:12px;line-height:1.7;}
-  .dl-card{background:linear-gradient(180deg,var(--panel),#0e1220);border:1px solid var(--line);
-    border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px;
-    transition:border-color .2s,box-shadow .2s;}
-  .dl-card.active{border-color:rgba(77,141,255,.5);
-    box-shadow:0 0 0 3px rgba(77,141,255,.08),0 8px 30px rgba(77,141,255,.08);}
+  .dl-card{background:linear-gradient(180deg,var(--panel),#0e1220);border:1px solid var(--line);border-radius:14px;
+    padding:14px;display:flex;flex-direction:column;gap:12px;transition:border-color .2s,box-shadow .2s;}
+  .dl-card.active{border-color:rgba(77,141,255,.5);box-shadow:0 0 0 3px rgba(77,141,255,.08),0 8px 30px rgba(77,141,255,.08);}
   .dl-head{display:flex;align-items:center;gap:12px;}
   .dl-icon{width:42px;height:42px;border-radius:11px;flex:none;
     background:linear-gradient(135deg,rgba(77,141,255,.25),rgba(143,107,255,.18));
     border:1px solid rgba(77,141,255,.32);display:grid;place-items:center;color:var(--brand-2);}
   .dl-icon svg{width:20px;height:20px;}
   .dl-info{flex:1;min-width:0;}
-  .dl-title{font-size:14.5px;font-weight:800;letter-spacing:.01em;}
+  .dl-title{font-size:14.5px;font-weight:800;}
   .dl-sub{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.4;
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .dl-start{flex:none;border:none;border-radius:11px;padding:11px 20px;font-size:14px;font-weight:700;
-    color:#fff;background:linear-gradient(180deg,var(--brand-2),var(--brand));cursor:pointer;
-    transition:transform .1s,filter .15s;box-shadow:0 4px 14px rgba(77,141,255,.32);
-    font-family:inherit;white-space:nowrap;}
+  .dl-start{flex:none;border:none;border-radius:11px;padding:11px 20px;font-size:14px;font-weight:700;color:#fff;
+    background:linear-gradient(180deg,var(--brand-2),var(--brand));cursor:pointer;
+    transition:transform .1s,filter .15s;box-shadow:0 4px 14px rgba(77,141,255,.32);font-family:inherit;white-space:nowrap;}
   .dl-start:active{transform:scale(.96);filter:brightness(.9);}
   .dl-start:disabled{opacity:.5;cursor:not-allowed;box-shadow:none;}
   .dl-progress{display:flex;flex-direction:column;gap:9px;}
   .dl-bar-wrap{position:relative;height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;}
-  .dl-bar{position:absolute;left:0;top:0;bottom:0;width:0;
-    background:linear-gradient(90deg,var(--brand),var(--brand-2));border-radius:99px;
-    transition:width .22s ease;box-shadow:0 0 12px rgba(77,141,255,.65);}
+  .dl-bar{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,var(--brand),var(--brand-2));
+    border-radius:99px;transition:width .22s ease;box-shadow:0 0 12px rgba(77,141,255,.65);}
   .dl-bar.indeterminate{width:36% !important;animation:dlSlide 1.3s cubic-bezier(.5,.1,.5,.9) infinite;}
   @keyframes dlSlide{0%{left:-36%;}100%{left:100%;}}
   .dl-stats{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;}
   .dl-stats b{color:var(--text);font-weight:700;}
   .dl-actions{display:flex;gap:8px;justify-content:flex-end;}
-  .dl-btn-ghost{background:transparent;border:1px solid var(--line);color:var(--text);
-    padding:8px 14px;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer;
-    font-family:inherit;transition:background .15s,border-color .15s;}
+  .dl-btn-ghost{background:transparent;border:1px solid var(--line);color:var(--text);padding:8px 14px;
+    border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;
+    transition:background .15s,border-color .15s;}
   .dl-btn-ghost:hover{background:rgba(255,255,255,.05);border-color:#32405c;}
   .dl-btn-danger{border-color:rgba(255,95,95,.36);color:var(--danger);}
   .dl-btn-danger:hover{background:rgba(255,95,95,.1);}
   .dl-btn-ghost:disabled{opacity:.4;cursor:not-allowed;}
   .dl-warn{font-size:11.5px;color:var(--gold);background:rgba(255,209,102,.08);
-    border:1px solid rgba(255,209,102,.24);border-radius:9px;padding:9px 11px;
-    line-height:1.55;display:none;}
+    border:1px solid rgba(255,209,102,.24);border-radius:9px;padding:9px 11px;line-height:1.55;display:none;}
   .dl-warn.show{display:block;}
   .menu{position:fixed;z-index:999;min-width:156px;background:#171c2b;border:1px solid var(--line);
     border-radius:12px;padding:6px;box-shadow:0 14px 38px rgba(0,0,0,.65);animation:pop .14s ease;}
-  .menu button{display:block;width:100%;text-align:left;background:none;border:none;color:var(--text);
-    font-size:14px;padding:10px 12px;border-radius:8px;cursor:pointer;
-    transition:background .12s;font-family:inherit;}
+  .menu button{display:block;width:100%;text-align:left;background:none;border:none;color:var(--text);font-size:14px;
+    padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .12s;font-family:inherit;}
   .menu button:hover{background:rgba(255,255,255,.08);}
   .menu button.danger{color:var(--danger);}
   .decoder-menu{min-width:260px;max-width:92vw;max-height:min(74vh,500px);overflow-y:auto;
     -webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
-  .menu-title{font-size:11px;font-weight:800;color:var(--muted);padding:8px 12px 6px;
-    letter-spacing:.08em;display:flex;justify-content:space-between;align-items:center;gap:6px;}
-  .menu-title .badge{font-size:10px;font-weight:700;color:var(--brand-2);
-    background:rgba(77,141,255,.14);border-radius:6px;padding:2px 6px;letter-spacing:0;}
+  .menu-title{font-size:11px;font-weight:800;color:var(--muted);padding:8px 12px 6px;letter-spacing:.08em;
+    display:flex;justify-content:space-between;align-items:center;gap:6px;}
+  .menu-title .badge{font-size:10px;font-weight:700;color:var(--brand-2);background:rgba(77,141,255,.14);
+    border-radius:6px;padding:2px 6px;letter-spacing:0;}
   .decoder-menu button.decoder-item{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:9px 12px;}
-  .decoder-item .d-name{font-size:13.5px;font-weight:700;color:var(--text);
-    display:flex;align-items:center;gap:6px;line-height:1.3;}
+  .decoder-item .d-name{font-size:13.5px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px;line-height:1.3;}
   .decoder-item .d-desc{font-size:11px;color:var(--muted);line-height:1.35;}
   .decoder-item.active{background:rgba(77,141,255,.14);}
   .decoder-item.active .d-name{color:var(--brand-2);}
@@ -192,12 +178,45 @@
   .decoder-item:disabled:hover{background:none;}
   .d-check{font-size:12px;color:var(--brand-2);}
   .menu-sep{height:1px;background:var(--line);margin:6px 8px;}
-  .toast{position:fixed;left:50%;bottom:36px;transform:translate(-50%,12px);
-    background:rgba(23,28,43,.98);border:1px solid var(--line);color:var(--text);
-    padding:10px 20px;border-radius:99px;font-size:13px;opacity:0;pointer-events:none;
-    transition:opacity .25s,transform .25s;z-index:1000;max-width:82vw;text-align:center;
+  .toast{position:fixed;left:50%;bottom:36px;transform:translate(-50%,12px);background:rgba(23,28,43,.98);
+    border:1px solid var(--line);color:var(--text);padding:10px 20px;border-radius:99px;font-size:13px;
+    opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:1000;max-width:82vw;text-align:center;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 8px 26px rgba(0,0,0,.5);}
   .toast.show{opacity:1;transform:translate(-50%,0);}
+
+  /* 诊断面板 */
+  .diag-panel{
+    position:fixed;inset:auto 10px 10px 10px;max-height:70vh;
+    background:#0d111c;border:1px solid var(--line);border-radius:14px;z-index:1001;
+    display:flex;flex-direction:column;overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,.7);
+    animation:pop .18s ease;
+  }
+  .diag-panel[hidden]{display:none;}
+  .diag-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);}
+  .diag-head b{font-size:14px;font-weight:800;color:#c084fc;}
+  .diag-head .spacer{flex:1;}
+  .diag-close{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;padding:0 6px;}
+  .diag-close:hover{color:var(--text);}
+  .diag-body{padding:12px 14px;overflow-y:auto;font-size:12px;line-height:1.6;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--text);}
+  .diag-body h4{margin:14px 0 6px;font-size:12px;color:#c084fc;font-weight:800;letter-spacing:.05em;text-transform:uppercase;}
+  .diag-body h4:first-child{margin-top:0;}
+  .diag-row{display:flex;gap:8px;padding:4px 0;border-bottom:1px dashed #1c2334;}
+  .diag-row .k{color:var(--muted);flex:none;min-width:110px;}
+  .diag-row .v{flex:1;min-width:0;word-break:break-all;}
+  .diag-row .v.ok{color:var(--ok);}
+  .diag-row .v.err{color:var(--danger);}
+  .diag-row .v.warn{color:var(--gold);}
+  .diag-pre{background:#08090d;border:1px solid #1c2334;border-radius:8px;padding:10px;
+    max-height:180px;overflow:auto;white-space:pre-wrap;word-break:break-all;
+    font-size:11px;color:#aab3c8;line-height:1.5;margin-top:6px;}
+  .diag-actions{display:flex;gap:8px;padding:0 14px 14px;}
+  .diag-btn{flex:1;padding:10px;border-radius:10px;border:1px solid var(--line);background:transparent;
+    color:var(--text);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s;}
+  .diag-btn:hover{background:rgba(255,255,255,.06);}
+  .diag-btn.primary{background:linear-gradient(180deg,var(--brand-2),var(--brand));border-color:transparent;
+    color:#fff;box-shadow:0 4px 14px rgba(77,141,255,.3);}
 </style>
 </head>
 <body>
@@ -209,7 +228,7 @@
         <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/>
       </svg>
     </div>
-    <div class="brand-name">VodCore<small>自研内核 · 重置版</small></div>
+    <div class="brand-name">VodCore<small>防盗链修复版</small></div>
     <div class="brand-badge" id="coreStatus"><i></i><span>内核就绪</span></div>
   </div>
 
@@ -220,7 +239,7 @@
   </div>
 
   <div class="player" id="player">
-    <video id="video" playsinline webkit-playsinline x5-playsinline preload="metadata"></video>
+    <video id="video" playsinline webkit-playsinline x5-playsinline preload="metadata" referrerpolicy="no-referrer"></video>
     <div class="core-tag" id="coreTag"><i id="coreDot"></i><span id="coreText">VodCore</span></div>
     <div class="big-play" id="bigPlay">
       <svg viewBox="0 0 24 24" width="62" height="62" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
@@ -261,18 +280,24 @@
       </svg>
       <span>解码</span>
     </button>
+    <button class="pill pill-diag" id="diagBtn" title="URL 诊断，查看服务器实际返回的内容">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/>
+        <path d="M11 8v3M11 14h.01"/>
+      </svg>
+      <span>诊断</span>
+    </button>
     <div class="search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
         <circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/>
       </svg>
-      <input id="searchInput" type="search" placeholder="搜索标记名称 / 时间…" autocomplete="off">
+      <input id="searchInput" type="search" placeholder="搜索标记…" autocomplete="off">
     </div>
   </div>
 
   <div class="marks" id="marksList"></div>
   <div class="empty" id="emptyTip">还没有标记 · 点击上方 🏳 旗子即可标记当前时间</div>
 
-  <!-- 下载卡片 -->
   <div class="dl-card" id="dlCard">
     <div class="dl-head">
       <div class="dl-icon">
@@ -283,8 +308,8 @@
         </svg>
       </div>
       <div class="dl-info">
-        <div class="dl-title">📥 高速下载 · 强化版</div>
-        <div class="dl-sub" id="dlSub">M3U8 · AES-128/192/256 · SAMPLE-AES-CTR · fMP4 · 直链</div>
+        <div class="dl-title">📥 高速下载 · 防替换版</div>
+        <div class="dl-sub" id="dlSub">M3U8 · AES-128/192/256 · fMP4 · 直链 · 全程 no-referrer</div>
       </div>
       <button class="dl-start" id="dlStartBtn">开始下载</button>
     </div>
@@ -304,17 +329,37 @@
   </div>
 </div>
 
+<!-- 标记菜单 -->
 <div class="menu" id="menu" hidden>
   <button data-act="seek">⏱ 跳转到此处</button>
   <button data-act="rename">✏️ 重命名</button>
   <button data-act="delete" class="danger">🗑 删除</button>
 </div>
+
+<!-- 解码菜单 -->
 <div class="menu decoder-menu" id="decoderMenu" hidden></div>
+
+<!-- 诊断面板 -->
+<div class="diag-panel" id="diagPanel" hidden>
+  <div class="diag-head">
+    <b>🔍 URL 诊断</b>
+    <span style="font-size:11px;color:var(--muted);">检查服务器实际返回的内容</span>
+    <div class="spacer"></div>
+    <button class="diag-close" id="diagClose">×</button>
+  </div>
+  <div class="diag-body" id="diagBody"></div>
+  <div class="diag-actions">
+    <button class="diag-btn" id="diagCopy">复制报告</button>
+    <button class="diag-btn primary" id="diagRun">重新诊断</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 /* ================================================================
- *  VodCore Player v4.0 · 强化解析 & 解密
+ *  VodCore v5.0 · 防盗链修复版
+ *  核心修复：所有请求强制 no-referrer，防止 CDN 依据 Referer 返回替换内容
  * ================================================================ */
 (function () {
   'use strict';
@@ -334,12 +379,13 @@
   const barBuffer = $('barBuffer'), barPlayed = $('barPlayed'), barMarks = $('barMarks'), barThumb = $('barThumb');
   const playBtn = $('playBtn'), timeLabel = $('timeLabel'), speedSel = $('speedSelect');
   const pipBtn = $('pipBtn'), fsBtn = $('fsBtn'), flagBtn = $('flagBtn'), decoderBtn = $('decoderBtn');
-  const searchInput = $('searchInput'), marksList = $('marksList'), emptyTip = $('emptyTip');
+  const diagBtn = $('diagBtn'), searchInput = $('searchInput'), marksList = $('marksList'), emptyTip = $('emptyTip');
   const menu = $('menu'), decoderMenu = $('decoderMenu'), toastEl = $('toast');
   const coreStatus = $('coreStatus'), coreTag = $('coreTag'), coreText = $('coreText'), coreDot = $('coreDot');
   const dlCard = $('dlCard'), dlSub = $('dlSub'), dlWarn = $('dlWarn'), dlStartBtn = $('dlStartBtn');
   const dlProgress = $('dlProgress'), dlBar = $('dlBar'), dlPercent = $('dlPercent');
   const dlSpeed = $('dlSpeed'), dlRemain = $('dlRemain'), dlSize = $('dlSize'), dlCancelBtn = $('dlCancelBtn');
+  const diagPanel = $('diagPanel'), diagBody = $('diagBody'), diagClose = $('diagClose'), diagRun = $('diagRun'), diagCopy = $('diagCopy');
 
   playBtn.innerHTML = ICON.play;
   bigPlay.innerHTML = ICON.play;
@@ -435,6 +481,59 @@
     el.style.visibility = '';
   }
 
+  /* ================================================================
+   *  SafeFetch · 防替换网络层
+   *  关键：所有请求 referrerPolicy: 'no-referrer'
+   * ================================================================ */
+  const SafeFetch = {
+    baseOpts() {
+      return {
+        credentials: 'omit',
+        mode: 'cors',
+        cache: 'no-store',
+        referrerPolicy: 'no-referrer',
+        redirect: 'follow'
+      };
+    },
+    async get(url, signal, extra) {
+      const opts = Object.assign(this.baseOpts(), extra || {});
+      if (signal) opts.signal = signal;
+      return await fetch(url, opts);
+    },
+    async text(url, signal, extra) {
+      const res = await this.get(url, signal, extra);
+      const text = await res.text();
+      return { res, text };
+    },
+    async binary(url, signal, byteRange) {
+      const extra = {};
+      if (byteRange && byteRange.length) {
+        const start = byteRange.offset || 0;
+        extra.headers = { Range: `bytes=${start}-${start + byteRange.length - 1}` };
+      }
+      const res = await this.get(url, signal, extra);
+      if (!res.ok && res.status !== 206) throw new Error('HTTP ' + res.status);
+      return new Uint8Array(await res.arrayBuffer());
+    }
+  };
+
+  /* ================= 内容校验 ================= */
+  function looksLikeM3U8(text) {
+    return /^\s*#EXTM3U/i.test(text);
+  }
+  function looksLikeHTML(text) {
+    const t = text.trim().slice(0, 200).toLowerCase();
+    return t.startsWith('<!doctype') || t.startsWith('<html') ||
+           (t.includes('<head') && t.includes('<body'));
+  }
+  function looksLikeJSON(text) {
+    const t = text.trim();
+    if ((t.startsWith('{') && t.endsWith('}')) || (t.startsWith('[') && t.endsWith(']'))) {
+      try { JSON.parse(t); return true; } catch (e) { return false; }
+    }
+    return false;
+  }
+
   /* ================= 标记存储 ================= */
   const STORE_KEY = 'vodcore_marks_v1';
   let markStore = {};
@@ -450,40 +549,22 @@
   /* ================= 解码器 ================= */
   const DECODERS = {
     auto: { name: '智能解码（推荐）', desc: '自动探测设备与网络，实时选择最优策略', auto: true },
-    boost: { name: '疾速解码 Turbo', desc: '激进预加载 + 高并发，弱网也能快速起播',
-      hls: { enableWorker: true, maxBufferLength: 90, maxMaxBufferLength: 240, backBufferLength: 60,
-        startLevel: -1, testBandwidth: true, abrEwmaDefaultEstimate: 1200000,
-        fragLoadingMaxRetry: 8, manifestLoadingMaxRetry: 6, levelLoadingMaxRetry: 6, fragLoadingTimeOut: 25000 } },
     hardware: { name: '硬件加速优先', desc: 'GPU 硬解，省电发热低，适合高分片源',
-      hls: { enableWorker: true, enableSoftwareAES: false, capLevelToPlayerSize: true, progressive: false,
-        startLevel: -1, testBandwidth: true, abrEwmaDefaultEstimate: 800000 } },
-    software: { name: '软件解码', desc: '主线程软解，兼容怪编码 / 异常 TS',
+      hls: { enableWorker: true, enableSoftwareAES: false, capLevelToPlayerSize: true, startLevel: -1 } },
+    software: { name: '软件解码', desc: '主线程软解，兼容怪编码',
       hls: { enableWorker: false, enableSoftwareAES: true, progressive: true, startLevel: -1, maxBufferLength: 60 } },
-    lowlatency: { name: '低延迟直播', desc: '极限小缓冲，适合直播；弱网可能卡顿',
-      hls: { enableWorker: true, lowLatencyMode: true, maxBufferLength: 6, backBufferLength: 0,
-        liveSyncDurationCount: 1, maxLiveSyncPlaybackRate: 1.5, liveDurationInfinity: true, startLevel: -1 } },
-    smooth: { name: '流畅优先', desc: '大缓冲策略，减少卡顿，适合长片点播',
+    lowlatency: { name: '低延迟直播', desc: '极限小缓冲',
+      hls: { enableWorker: true, lowLatencyMode: true, maxBufferLength: 6, backBufferLength: 0, liveSyncDurationCount: 1 } },
+    smooth: { name: '流畅优先', desc: '大缓冲策略',
       hls: { enableWorker: true, maxBufferLength: 120, maxMaxBufferLength: 300, backBufferLength: 180, startLevel: -1 } },
     compat: { name: '兼容模式', desc: '关闭高级特性，老旧设备 / 弱网首选',
       hls: { enableWorker: false, maxBufferLength: 30, backBufferLength: 30, enableSoftwareAES: true,
-        manifestLoadingMaxRetry: 8, levelLoadingMaxRetry: 8, fragLoadingMaxRetry: 10,
-        manifestLoadingTimeOut: 20000, levelLoadingTimeOut: 20000, fragLoadingTimeOut: 30000, startLevel: -1 } },
-    lowpower: { name: '低功耗省电', desc: '降低缓冲与解码压力，省电省流量',
-      hls: { enableWorker: true, maxBufferLength: 30, backBufferLength: 15, maxMaxBufferLength: 60,
-        capLevelToPlayerSize: true, abrBandWidthFactor: .6, abrBandWidthUpFactor: .4, startLevel: 0 } },
-    mobile: { name: '移动网络优化', desc: '针对 4G/5G 优化，平衡清晰度与流量',
-      hls: { enableWorker: true, maxBufferLength: 45, backBufferLength: 30, capLevelToPlayerSize: true,
-        abrBandWidthFactor: .75, abrBandWidthUpFactor: .5, startLevel: -1 } },
-    quality: { name: '高画质优先', desc: '锁定最高码率，画质党首选',
-      hls: { enableWorker: true, maxBufferLength: 90, backBufferLength: 120, capLevelToPlayerSize: false,
-        startLevel: -1, abrBandWidthFactor: 1, abrBandWidthUpFactor: .9 } },
-    secure: { name: '加密链接增强', desc: '针对 AES-128 / SAMPLE-AES 加密流优化',
-      hls: { enableWorker: true, enableSoftwareAES: true, maxBufferLength: 60, backBufferLength: 60,
-        startLevel: -1, fragLoadingMaxRetry: 8, manifestLoadingMaxRetry: 6, levelLoadingMaxRetry: 6 } },
+        manifestLoadingMaxRetry: 8, levelLoadingMaxRetry: 8, fragLoadingMaxRetry: 10, startLevel: -1 } },
+    secure: { name: '加密链接增强', desc: '针对 AES 加密流优化',
+      hls: { enableWorker: true, enableSoftwareAES: true, maxBufferLength: 60, backBufferLength: 60, startLevel: -1 } },
     native: { name: '浏览器原生解码', desc: '交给浏览器内核，Safari / iOS 效果最佳', native: true }
   };
-  const DECODER_ORDER = ['auto','boost','hardware','software','lowlatency','smooth',
-    'compat','lowpower','mobile','quality','secure','native'];
+  const DECODER_ORDER = ['auto','hardware','software','lowlatency','smooth','compat','secure','native'];
   let currentDecoder = 'auto';
   try { const s = localStorage.getItem('vodcore_decoder'); if (s && DECODERS[s]) currentDecoder = s; } catch (e) {}
 
@@ -492,17 +573,9 @@
       if (ENV.isIOS) return ENV.nativeHlsOk ? 'native' : 'compat';
       if (ENV.isSafari && !ENV.isMobile) return ENV.nativeHlsOk ? 'native' : (ENV.hlsJsOk ? 'hardware' : 'compat');
       if (!ENV.hlsJsOk) return ENV.nativeHlsOk ? 'native' : 'compat';
-      if (ENV.saveData) return 'lowpower';
-      if (ENV.effectiveType === 'slow-2g' || ENV.effectiveType === '2g') return 'lowpower';
+      if (ENV.saveData) return 'compat';
       if (ENV.lowEnd) return 'compat';
-      if (ENV.effectiveType === '3g') return ENV.isMobile ? 'mobile' : 'compat';
-      if (ENV.isMobile) {
-        if (ENV.downlink && ENV.downlink < 1.5) return 'lowpower';
-        if (ENV.highEnd && (!ENV.downlink || ENV.downlink > 5)) return 'boost';
-        return 'mobile';
-      }
-      if (ENV.highEnd && (ENV.effectiveType === '4g' || !ENV.effectiveType)) return 'boost';
-      if (ENV.effectiveType === '4g') return 'smooth';
+      if (ENV.isMobile) return 'smooth';
       return 'hardware';
     },
     resolve(key) {
@@ -516,7 +589,7 @@
 
   /* ================= 播放内核 ================= */
   const VodCore = {
-    version: '4.0.0', hls: null, retries: 0,
+    version: '5.0.0', hls: null, retries: 0,
     loadingShown: false, loadingTimer: null, wasPlaying: false, keyDetected: false,
     scheduleLoading(d) {
       if (this.loadingShown) return;
@@ -540,18 +613,41 @@
       i.style.background = ok ? 'var(--ok)' : 'var(--danger)';
       i.style.boxShadow = ok ? '0 0 8px var(--ok)' : '0 0 8px var(--danger)';
     },
-    async probeEncryption(url) {
-      if (/\.(mp4|webm|ogg|ogv|mov|m4v|flv|mkv)(\?|#|$)/i.test(url)) return { encrypted: false };
+
+    /* ---- 探测：同时验证内容是否为 M3U8 ---- */
+    async probe(url) {
+      if (/\.(mp4|webm|ogg|ogv|mov|m4v|flv|mkv|avi)(\?|#|$)/i.test(url)) {
+        return { type: 'direct' };
+      }
       try {
-        const ctrl = new AbortController();
-        const t = setTimeout(() => ctrl.abort(), 3500);
-        const res = await fetch(url, { signal: ctrl.signal, method: 'GET', credentials: 'omit' });
-        clearTimeout(t);
-        if (!res.ok) return { encrypted: null };
-        const text = await res.text();
-        return { encrypted: /#EXT-X-KEY:METHOD=(AES-128|SAMPLE-AES|SAMPLE-AES-CTR|AES-256)/i.test(text) };
-      } catch (e) { return { encrypted: null }; }
+        const { res, text } = await SafeFetch.text(url);
+        if (!res.ok) {
+          return { type: 'error', message: 'HTTP ' + res.status, status: res.status };
+        }
+        if (looksLikeM3U8(text)) {
+          return {
+            type: 'm3u8',
+            encrypted: /#EXT-X-KEY:METHOD=(AES-128|SAMPLE-AES|AES-256)/i.test(text),
+            text: text,
+            redirected: res.redirected,
+            finalUrl: res.url
+          };
+        }
+        if (looksLikeHTML(text)) {
+          return { type: 'html', message: '服务器返回的是 HTML 页面，不是 M3U8。请检查链接是否为播放页而非视频源。',
+            preview: text.slice(0, 200) };
+        }
+        if (looksLikeJSON(text)) {
+          return { type: 'json', message: '服务器返回的是 JSON，不是 M3U8。可能这是一个 API 接口链接。',
+            preview: text.slice(0, 200) };
+        }
+        return { type: 'unknown', message: '服务器返回的内容不是 M3U8',
+          preview: text.slice(0, 200), redirected: res.redirected, finalUrl: res.url };
+      } catch (e) {
+        return { type: 'network-error', message: e.message || '网络请求失败' };
+      }
     },
+
     async load(url, resumeAt) {
       url = (url || '').trim();
       if (!url) { toast('请输入链接'); return; }
@@ -565,26 +661,75 @@
       try { video.pause(); video.removeAttribute('src'); video.load(); } catch (e) {}
       this.showLoadingNow();
       this.setStatus('加载中…', true);
-      const probe = await this.probeEncryption(url);
-      if (probe.encrypted === true) { this.keyDetected = true; this.setTag('加密流 · 需解密', true); }
+
+      const probe = await this.probe(url);
+
+      // 内容校验：防止静默播放错误内容
+      if (probe.type === 'html' || probe.type === 'json' || probe.type === 'unknown') {
+        this.hideLoading();
+        this.setStatus('内容校验失败', false);
+        this.setTag('⚠️ 返回的不是 M3U8', false);
+        console.warn('[VodCore] 内容校验失败：', probe);
+        toast('警告：' + probe.message);
+        // 在诊断面板展示详情
+        showDiagReport(buildProbeReport(url, probe));
+        return;
+      }
+      if (probe.type === 'network-error') {
+        this.hideLoading();
+        this.setStatus('网络错误', false);
+        this.setTag('⚠️ 网络请求失败', false);
+        toast('网络请求失败：' + probe.message);
+        showDiagReport(buildProbeReport(url, probe));
+        return;
+      }
+      if (probe.redirected) {
+        console.warn('[VodCore] URL 被重定向：', url, '→', probe.finalUrl);
+        toast('⚠️ URL 被服务器重定向');
+      }
+      if (probe.encrypted) {
+        this.keyDetected = true;
+        this.setTag('加密流 · 需解密', true);
+      }
+
       const decoderKey = SmartDecoder.resolve(currentDecoder);
       const decoder = DECODERS[decoderKey] || DECODERS.compat;
-      const isDirect = /\.(mp4|webm|ogg|ogv|mov|m4v|flv|mkv|avi)(\?|#|$)/i.test(url);
+      const isDirect = probe.type === 'direct';
       const useHlsJs = !isDirect && ENV.hlsJsOk && !decoder.native;
       if (currentDecoder === 'auto' && !isDirect) toast('智能解码 → ' + decoder.name);
       this.setTag('VodCore · ' + (isDirect ? '直链' : decoder.name), this.keyDetected);
+
       if (useHlsJs) this._viaHlsJs(url, decoder, resumeAt);
       else if (ENV.nativeHlsOk || isDirect) this._viaNative(url, resumeAt);
-      else { this.hideLoading(); this.setStatus('无可用解码', false); toast('请点击「解码」切换'); }
+      else {
+        this.hideLoading();
+        this.setStatus('无可用解码', false);
+        toast('请点击「解码」切换');
+      }
     },
+
     _viaHlsJs(url, decoder, resumeAt) {
+      // 关键：fetchSetup 强制 no-referrer
       const baseCfg = {
         enableWorker: true, lowLatencyMode: false, backBufferLength: 90, maxBufferLength: 60,
         manifestLoadingMaxRetry: 4, levelLoadingMaxRetry: 4, fragLoadingMaxRetry: 6,
         manifestLoadingTimeOut: 15000, levelLoadingTimeOut: 15000, fragLoadingTimeOut: 20000,
         startLevel: -1,
+        // 新版 HLS.js 用 fetch loader
+        fetchSetup: (context, initParams) => {
+          initParams.referrerPolicy = 'no-referrer';
+          initParams.credentials = 'omit';
+          initParams.mode = 'cors';
+          initParams.cache = 'no-store';
+          return new Request(context.url, initParams);
+        },
+        // 旧版 XHR loader 兜底
         xhrSetup: (xhr, reqUrl) => {
-          try { xhr.withCredentials = false; } catch (e) {}
+          try {
+            xhr.withCredentials = false;
+            // 某些浏览器允许设置 referrer
+            if ('referrer' in xhr) xhr.referrer = '';
+          } catch (e) {}
           if (/key/i.test(reqUrl)) {
             this.keyDetected = true;
             coreDot.classList.add('enc');
@@ -597,12 +742,21 @@
       try { hls = new window.Hls(cfg); }
       catch (e) { this.hideLoading(); this.setStatus('内核启动失败', false); toast('HLS 启动失败：' + e.message); return; }
       this.hls = hls;
+
       hls.on(window.Hls.Events.KEY_LOADING, () => {
         this.keyDetected = true;
         coreDot.classList.add('enc');
         this.setTag('VodCore · 解密中…', true);
       });
       hls.on(window.Hls.Events.KEY_LOADED, () => this.setTag('VodCore · 已解密', true));
+
+      // 记录实际加载的分片 URL，便于诊断
+      hls.on(window.Hls.Events.FRAG_LOADING, (e, data) => {
+        if (!window.__vodLastFrag) window.__vodLastFrag = [];
+        window.__vodLastFrag.push(data.frag.url);
+        if (window.__vodLastFrag.length > 5) window.__vodLastFrag.shift();
+      });
+
       hls.on(window.Hls.Events.MANIFEST_PARSED, () => {
         this.hideLoading(); this.setStatus('播放中', true);
         if (resumeAt > 0) { try { video.currentTime = resumeAt; } catch (e) {} }
@@ -612,6 +766,7 @@
           if (lv) this.setTag(`VodCore · ${lv.width}x${lv.height}`, this.keyDetected);
         } catch (e) {}
       });
+
       hls.on(window.Hls.Events.ERROR, (evt, data) => {
         if (!data.fatal) return;
         if (data.type === window.Hls.ErrorTypes.NETWORK_ERROR && this.retries < 4) {
@@ -624,27 +779,18 @@
           try { hls.recoverMediaError(); } catch (e) {}
           return;
         }
-        if (data.details && /key/i.test(data.details)) {
-          this.hideLoading(); this.setStatus('解密失败', false);
-          toast('解密失败：' + data.details);
-          return;
-        }
-        if (this.retries >= 4 && currentDecoder !== 'compat') {
-          toast('多次失败，自动降级…');
-          currentDecoder = 'compat';
-          try { localStorage.setItem('vodcore_decoder', 'compat'); } catch (e) {}
-          updateDecoderBtn();
-          this.load(currentUrl, video.currentTime || 0);
-          return;
-        }
         this.hideLoading(); this.setStatus('播放失败', false);
         toast('播放失败：' + (data.details || '未知错误'));
       });
+
       hls.loadSource(url);
       hls.attachMedia(video);
     },
+
     _viaNative(url, resumeAt) {
       this.setTag('VodCore · 原生解码', this.keyDetected);
+      // 关键：video 元素已设置 referrerpolicy="no-referrer"
+      try { video.referrerPolicy = 'no-referrer'; } catch (e) {}
       const onMeta = () => {
         video.removeEventListener('loadedmetadata', onMeta);
         this.hideLoading(); this.setStatus('播放中', true);
@@ -667,6 +813,7 @@
       video.addEventListener('error', onErr);
       video.src = url;
     },
+
     play() { if (currentUrl) video.play().catch(() => {}); },
     pause() { video.pause(); },
     toggle() { if (!currentUrl) { toast('请先输入链接'); return; } video.paused ? this.play() : this.pause(); },
@@ -713,7 +860,6 @@
   video.addEventListener('stalled', () => VodCore.scheduleLoading(650));
   video.addEventListener('playing', () => VodCore.hideLoading());
   video.addEventListener('canplay', () => VodCore.hideLoading());
-  video.addEventListener('canplaythrough', () => VodCore.hideLoading());
   video.addEventListener('seeked', () => VodCore.hideLoading());
   video.addEventListener('loadeddata', () => VodCore.hideLoading());
   video.addEventListener('loadedmetadata', () => { VodCore.hideLoading(); renderBarMarks(); updateTimeLabel(); updateFsIcon(); });
@@ -884,8 +1030,7 @@
       const d = DECODERS[key];
       if (!d) return;
       const b = document.createElement('button');
-      b.type = 'button';
-      b.dataset.decoder = key;
+      b.type = 'button'; b.dataset.decoder = key;
       b.className = 'decoder-item' + (key === currentDecoder ? ' active' : '');
       let disabled = false;
       if (!d.native && !ENV.hlsJsOk) disabled = true;
@@ -898,10 +1043,6 @@
       if (d.auto && realKey !== 'auto') desc = '当前实际：' + (DECODERS[realKey] ? DECODERS[realKey].name : '兼容模式');
       b.innerHTML = nameHtml + '<span class="d-desc">' + desc + '</span>';
       decoderMenu.appendChild(b);
-      if (key === 'auto') {
-        const sep = document.createElement('div'); sep.className = 'menu-sep';
-        decoderMenu.appendChild(sep);
-      }
     });
   }
   decoderBtn.addEventListener('click', (e) => {
@@ -914,11 +1055,7 @@
     if (!btn || btn.disabled) return;
     const key = btn.dataset.decoder;
     decoderMenu.hidden = true;
-    if (key === currentDecoder) {
-      const real = SmartDecoder.resolve(key);
-      toast('当前已是「' + DECODERS[key].name + '」' + (DECODERS[key].auto ? `（实际：${DECODERS[real].name}）` : ''));
-      return;
-    }
+    if (key === currentDecoder) { toast('当前已是该解码'); return; }
     decoderBtn.classList.add('pulse');
     setTimeout(() => decoderBtn.classList.remove('pulse'), 420);
     VodCore.setDecoder(key);
@@ -947,10 +1084,8 @@
     const list = q ? marks.filter((m) => (m.title || '').toLowerCase().includes(q) || fmt(m.time).toLowerCase().includes(q)) : marks;
     if (list.length === 0) {
       const d = document.createElement('div');
-      d.className = 'empty';
-      d.textContent = '没有找到与「' + q + '」相关的标记';
-      marksList.appendChild(d);
-      return;
+      d.className = 'empty'; d.textContent = '没有找到与「' + q + '」相关的标记';
+      marksList.appendChild(d); return;
     }
     list.forEach((m) => marksList.appendChild(buildMarkEl(m)));
   }
@@ -993,8 +1128,7 @@
   function clearAllMarks() {
     if (marks.length === 0) { toast('没有标记可删除'); return; }
     if (!confirm('确定删除全部 ' + marks.length + ' 个标记吗？不可撤销。')) return;
-    marks = [];
-    saveMarks(); renderMarks(); renderBarMarks();
+    marks = []; saveMarks(); renderMarks(); renderBarMarks();
     toast('已清空全部标记');
   }
   flagBtn.addEventListener('click', addMark);
@@ -1041,448 +1175,318 @@
   });
 
   /* ================================================================
-   *  M3U8Parser v2 · 强化解析器
-   *  支持：多级 master · 媒体组 · byterange · discontinuity · i-frame
+   *  诊断系统 · 显示服务器实际返回的内容
    * ================================================================ */
-  const M3U8Parser = {
-    parse(text, baseUrl) {
-      if (typeof text !== 'string') throw new Error('无效的 M3U8 内容');
-      // 去 BOM + 统一换行
-      text = text.replace(/^\uFEFF/, '');
-      const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-
-      if (!lines[0] || lines[0].indexOf('#EXTM3U') !== 0) {
-        throw new Error('不是有效的 M3U8 文件（缺少 #EXTM3U 头）');
-      }
-
-      const result = {
-        isMaster: false, isMedia: false,
-        variants: [], iFrameVariants: [],
-        mediaGroups: {},
-        segments: [], initSegment: null,
-        totalDuration: 0, mediaSequence: 0, discontinuitySequence: 0,
-        hasEncryption: false, encMethods: new Set(), encKeyFormats: new Set(),
-        version: 3, hasEndList: false, hasMap: false
-      };
-
-      const resolve = (u) => { try { return new URL(u, baseUrl).href; } catch (e) { return u; } };
-      const parseAttrs = (line) => {
-        const attrs = {};
-        const re = /([A-Z0-9-]+)=("([^"]*)"|[^,]*)/gi;
-        let m;
-        while ((m = re.exec(line)) !== null) {
-          attrs[m[1].toUpperCase()] = m[3] !== undefined ? m[3] : m[2].trim();
-        }
-        return attrs;
-      };
-
-      let currentKey = null;
-      let currentByteRange = null;
-      let pendingDuration = -1;
-      let pendingTitle = '';
-      let pendingProgramTime = '';
-      let pendingDiscontinuity = false;
-      let pendingStreamInf = null;
-      let lastByteRangeEnd = 0;
-      let seq = 0;
-      let discSeq = 0;
-
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        if (!line) continue;
-
-        // URI 行（非 # 开头）
-        if (line[0] !== '#') {
-          const uri = resolve(line);
-          if (pendingStreamInf) {
-            result.variants.push(Object.assign({ url: uri }, pendingStreamInf));
-            pendingStreamInf = null;
-            continue;
-          }
-          if (pendingDuration >= 0) {
-            result.segments.push({
-              url: uri, duration: pendingDuration, title: pendingTitle,
-              programTime: pendingProgramTime, key: currentKey,
-              sequence: seq, discontinuity: pendingDiscontinuity,
-              discontinuitySequence: discSeq, byteRange: currentByteRange
-            });
-            seq++;
-            pendingDuration = -1; pendingTitle = ''; pendingProgramTime = '';
-            pendingDiscontinuity = false; currentByteRange = null;
-          }
-          continue;
-        }
-
-        // 标签行
-        if (line.indexOf('#EXT-X-VERSION:') === 0) {
-          result.version = parseFloat(line.split(':')[1]) || 3;
-        } else if (line.indexOf('#EXT-X-MEDIA-SEQUENCE:') === 0) {
-          result.mediaSequence = parseInt(line.split(':')[1], 10) || 0;
-          seq = result.mediaSequence;
-        } else if (line.indexOf('#EXT-X-DISCONTINUITY-SEQUENCE:') === 0) {
-          result.discontinuitySequence = parseInt(line.split(':')[1], 10) || 0;
-          discSeq = result.discontinuitySequence;
-        } else if (line.indexOf('#EXT-X-ENDLIST') === 0) {
-          result.hasEndList = true;
-        } else if (line.indexOf('#EXT-X-PLAYLIST-TYPE:') === 0) {
-          const type = line.split(':')[1].trim().toUpperCase();
-          if (type === 'VOD') result.hasEndList = true;
-        } else if (line.indexOf('#EXT-X-MEDIA:') === 0) {
-          const attrs = parseAttrs(line);
-          const type = (attrs.TYPE || '').toUpperCase();
-          const groupId = attrs['GROUP-ID'] || '';
-          if (type && groupId) {
-            if (!result.mediaGroups[type]) result.mediaGroups[type] = {};
-            if (!result.mediaGroups[type][groupId]) result.mediaGroups[type][groupId] = [];
-            result.mediaGroups[type][groupId].push({
-              uri: attrs.URI ? resolve(attrs.URI) : null,
-              language: attrs.LANGUAGE || '',
-              name: attrs.NAME || '',
-              default: attrs.DEFAULT === 'YES',
-              autoselect: attrs.AUTOSELECT === 'YES',
-              channels: attrs.CHANNELS || '',
-              characteristics: attrs.CHARACTERISTICS || ''
-            });
-          }
-        } else if (line.indexOf('#EXT-X-STREAM-INF:') === 0) {
-          result.isMaster = true;
-          const attrs = parseAttrs(line);
-          pendingStreamInf = {
-            bandwidth: parseInt(attrs.BANDWIDTH, 10) || 0,
-            averageBandwidth: parseInt(attrs['AVERAGE-BANDWIDTH'], 10) || 0,
-            codecs: attrs.CODECS || '',
-            resolution: attrs.RESOLUTION || '',
-            frameRate: parseFloat(attrs['FRAME-RATE']) || 0,
-            hdcpLevel: attrs.HDCP_LEVEL || '',
-            audioGroup: attrs.AUDIO || '',
-            videoGroup: attrs.VIDEO || '',
-            subtitlesGroup: attrs.SUBTITLES || '',
-            closedCaptions: attrs['CLOSED-CAPTIONS'] || null,
-            name: attrs.NAME || '',
-            programId: attrs['PROGRAM-ID'] || ''
-          };
-        } else if (line.indexOf('#EXT-X-I-FRAME-STREAM-INF:') === 0) {
-          result.isMaster = true;
-          const attrs = parseAttrs(line);
-          if (attrs.URI) {
-            result.iFrameVariants.push({
-              url: resolve(attrs.URI),
-              bandwidth: parseInt(attrs.BANDWIDTH, 10) || 0,
-              resolution: attrs.RESOLUTION || '',
-              codecs: attrs.CODECS || ''
-            });
-          }
-        } else if (line.indexOf('#EXT-X-KEY:') === 0) {
-          const attrs = parseAttrs(line);
-          const method = (attrs.METHOD || '').toUpperCase();
-          if (!method || method === 'NONE') {
-            currentKey = null;
-          } else {
-            currentKey = {
-              method, uri: attrs.URI ? resolve(attrs.URI) : null,
-              iv: attrs.IV || null,
-              keyFormat: attrs.KEYFORMAT || 'identity',
-              keyFormatVersions: attrs.KEYFORMATVERSIONS || '1'
-            };
-            result.hasEncryption = true;
-            result.encMethods.add(method);
-            result.encKeyFormats.add(currentKey.keyFormat);
-          }
-        } else if (line.indexOf('#EXT-X-MAP:') === 0) {
-          const attrs = parseAttrs(line);
-          if (attrs.URI) {
-            let br = null;
-            if (attrs.BYTERANGE) {
-              const parts = attrs.BYTERANGE.split('@');
-              br = { length: parseInt(parts[0], 10), offset: parts[1] ? parseInt(parts[1], 10) : null };
-            }
-            result.initSegment = { url: resolve(attrs.URI), key: currentKey, byteRange: br };
-            result.hasMap = true;
-          }
-        } else if (line.indexOf('#EXT-X-BYTERANGE:') === 0) {
-          const parts = line.split(':')[1].split('@');
-          const length = parseInt(parts[0], 10);
-          let offset;
-          if (parts[1] !== undefined) {
-            offset = parseInt(parts[1], 10);
-            lastByteRangeEnd = offset + length;
-          } else if (lastByteRangeEnd > 0) {
-            offset = lastByteRangeEnd;
-            lastByteRangeEnd = offset + length;
-          } else {
-            offset = 0;
-            lastByteRangeEnd = length;
-          }
-          currentByteRange = { length, offset };
-        } else if (line.indexOf('#EXT-X-DISCONTINUITY') === 0) {
-          pendingDiscontinuity = true;
-          discSeq++;
-        } else if (line.indexOf('#EXTINF:') === 0) {
-          const rest = line.substring(8);
-          const commaIdx = rest.indexOf(',');
-          const durStr = commaIdx >= 0 ? rest.substring(0, commaIdx) : rest;
-          pendingDuration = parseFloat(durStr) || 0;
-          pendingTitle = commaIdx >= 0 ? rest.substring(commaIdx + 1) : '';
-          result.totalDuration += pendingDuration;
-        } else if (line.indexOf('#EXT-X-PROGRAM-DATE-TIME:') === 0) {
-          pendingProgramTime = line.substring(25);
-        }
-      }
-
-      result.isMedia = result.segments.length > 0 && !result.isMaster;
-      return result;
-    },
-
-    // 用于选流的质量评分
-    resolutionScore(resStr) {
-      if (!resStr) return 0;
-      const m = String(resStr).match(/(\d+)x(\d+)/);
-      if (!m) return 0;
-      return parseInt(m[1], 10) * parseInt(m[2], 10);
+  function buildProbeReport(url, probe) {
+    const lines = [];
+    lines.push('URL: ' + url);
+    lines.push('时间: ' + new Date().toLocaleString());
+    lines.push('');
+    lines.push('【探测结果】');
+    lines.push('类型: ' + probe.type);
+    if (probe.status) lines.push('HTTP 状态: ' + probe.status);
+    if (probe.redirected !== undefined) lines.push('是否重定向: ' + (probe.redirected ? '是' : '否'));
+    if (probe.finalUrl) lines.push('最终 URL: ' + probe.finalUrl);
+    if (probe.encrypted !== undefined) lines.push('是否加密: ' + (probe.encrypted ? '是' : '否'));
+    if (probe.message) lines.push('消息: ' + probe.message);
+    if (probe.preview) {
+      lines.push('');
+      lines.push('【内容预览】');
+      lines.push(probe.preview);
     }
-  };
+    if (window.__vodLastFrag && window.__vodLastFrag.length) {
+      lines.push('');
+      lines.push('【最近加载的分片】');
+      window.__vodLastFrag.forEach((u, i) => lines.push((i + 1) + '. ' + u));
+    }
+    return lines.join('\n');
+  }
+
+  async function runDiagnose() {
+    const url = currentUrl || urlInput.value.trim();
+    if (!url) { toast('请先输入链接'); return; }
+    diagBody.innerHTML = '<div style="color:var(--muted);">正在诊断…</div>';
+    diagPanel.hidden = false;
+
+    const urlHtml = escapeHtml(url);
+    const lines = [];
+    lines.push(row('请求 URL', urlHtml));
+    lines.push(row('时间', escapeHtml(new Date().toLocaleString())));
+    lines.push(row('请求模式', 'no-referrer · credentials=omit · cache=no-store'));
+
+    try {
+      const probe = await VodCore.probe(url);
+      lines.push('');
+      lines.push('<h4>响应分析</h4>');
+      lines.push(row('内容类型', escapeHtml(probe.type)));
+      if (probe.status) lines.push(row('HTTP 状态', probe.status + (probe.status === 200 ? ' ✅' : ' ⚠️'), probe.status === 200 ? 'ok' : 'err'));
+      if (probe.redirected !== undefined) {
+        lines.push(row('是否被重定向', probe.redirected ? '⚠️ 是' : '否', probe.redirected ? 'err' : 'ok'));
+      }
+      if (probe.finalUrl && probe.finalUrl !== url) {
+        lines.push(row('最终 URL', escapeHtml(probe.finalUrl), 'warn'));
+      }
+      if (probe.encrypted !== undefined) {
+        lines.push(row('是否加密', probe.encrypted ? '是' : '否', probe.encrypted ? 'warn' : 'ok'));
+      }
+      if (probe.message) lines.push(row('说明', escapeHtml(probe.message)));
+
+      if (probe.preview) {
+        lines.push('<h4>内容预览（前 300 字符）</h4>');
+        lines.push('<div class="diag-pre">' + escapeHtml(probe.preview) + '</div>');
+      }
+
+      // 内容判定
+      lines.push('');
+      lines.push('<h4>判定</h4>');
+      if (probe.type === 'm3u8') {
+        lines.push(row('结论', '✅ 这是有效的 M3U8 播放列表', 'ok'));
+      } else if (probe.type === 'html') {
+        lines.push(row('结论', '❌ 返回的是网页，不是视频源', 'err'));
+        lines.push(row('建议', '你复制的可能是"播放页"URL，需要从播放器的网络请求里找到 .m3u8 的真实地址'));
+      } else if (probe.type === 'json') {
+        lines.push(row('结论', '❌ 返回的是 JSON，可能是 API 接口', 'err'));
+        lines.push(row('建议', '这是 API 接口，不是视频源。需要从 JSON 里提取真正的 m3u8 地址'));
+      } else if (probe.type === 'network-error') {
+        lines.push(row('结论', '❌ 网络请求失败', 'err'));
+        lines.push(row('建议', '可能是 CORS 跨域限制，或链接已失效'));
+      } else {
+        lines.push(row('结论', '⚠️ 返回了未知内容', 'warn'));
+      }
+
+      // 如果本身是 M3U8，进一步解析
+      if (probe.type === 'm3u8' && probe.text) {
+        lines.push('');
+        lines.push('<h4>M3U8 结构</h4>');
+        const text = probe.text;
+        lines.push(row('行数', text.split('\n').length));
+        lines.push(row('是否 Master', /#EXT-X-STREAM-INF/i.test(text) ? '是' : '否'));
+        lines.push(row('分片数量', (text.match(/#EXTINF/gi) || []).length));
+        lines.push(row('加密方式', (text.match(/#EXT-X-KEY:METHOD=([^\s,]+)/i) || [,'NONE'])[1]));
+        const keys = text.match(/#EXT-X-KEY:.*URI="([^"]+)"/gi);
+        if (keys) {
+          lines.push('<h4>密钥地址</h4>');
+          keys.slice(0, 3).forEach((k) => {
+            const m = k.match(/URI="([^"]+)"/);
+            if (m) lines.push('<div class="diag-pre">' + escapeHtml(m[1]) + '</div>');
+          });
+        }
+      }
+
+      diagBody.innerHTML = lines.join('');
+    } catch (e) {
+      diagBody.innerHTML = lines.join('') + '<div class="diag-pre" style="color:var(--danger);">异常：' +
+        escapeHtml(e.message || String(e)) + '</div>';
+    }
+  }
+
+  function row(k, v, cls) {
+    return '<div class="diag-row"><span class="k">' + k + '</span><span class="v ' + (cls || '') + '">' + v + '</span></div>';
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function showDiagReport(text) {
+    diagBody.innerHTML = '<div class="diag-pre">' + escapeHtml(text) + '</div>';
+    diagPanel.hidden = false;
+  }
+
+  diagBtn.addEventListener('click', () => { runDiagnose(); });
+  diagRun.addEventListener('click', () => { runDiagnose(); });
+  diagClose.addEventListener('click', () => { diagPanel.hidden = true; });
+  diagCopy.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(diagBody.innerText);
+      toast('报告已复制');
+    } catch (e) { toast('复制失败'); }
+  });
 
   /* ================================================================
-   *  Decryptor v2 · 强化解密器
-   *  支持：AES-128/192/256 · AES-CTR · SAMPLE-AES-CTR · 多密钥轮换
+   *  VodDownloader v5 · 防替换下载
    * ================================================================ */
   const Decryptor = {
     keyCache: new Map(),
-
     reset() { this.keyCache.clear(); },
-
-    hasWebCrypto() {
-      return !!(window.crypto && window.crypto.subtle);
-    },
-
     async getKeyBytes(uri, signal) {
       if (this.keyCache.has(uri)) return this.keyCache.get(uri);
       const promise = (async () => {
-        const res = await fetch(uri, { signal, credentials: 'omit', mode: 'cors' });
-        if (!res.ok) throw new Error('密钥请求失败 HTTP ' + res.status);
-        const buf = await res.arrayBuffer();
-        const bytes = new Uint8Array(buf);
-        if (bytes.length !== 16 && bytes.length !== 24 && bytes.length !== 32) {
-          // 尝试兼容非标准密钥长度
-          if (bytes.length > 16 && bytes.length < 32) {
-            // 保持原样
-          } else if (bytes.length < 16) {
-            const padded = new Uint8Array(16);
-            padded.set(bytes);
-            return padded;
-          } else if (bytes.length > 32) {
-            return bytes.slice(0, 32);
-          }
-        }
-        return bytes;
+        const buf = await SafeFetch.binary(uri, signal);
+        return buf;
       })();
       this.keyCache.set(uri, promise);
       try { return await promise; }
       catch (e) { this.keyCache.delete(uri); throw e; }
     },
-
     hexToBytes(hex) {
       hex = String(hex).replace(/^0x/i, '').replace(/[^0-9a-f]/gi, '');
       if (hex.length % 2) hex = '0' + hex;
       const bytes = new Uint8Array(hex.length / 2);
       for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
       if (bytes.length === 16) return bytes;
-      const padded = new Uint8Array(16);
-      padded.set(bytes.slice(0, 16));
-      return padded;
+      const p = new Uint8Array(16); p.set(bytes.slice(0, 16)); return p;
     },
-
-    // 推导 IV（无显式 IV 时用 sequence 大端）
     deriveIV(keyInfo, sequence) {
       if (keyInfo && keyInfo.iv) return this.hexToBytes(keyInfo.iv);
       const iv = new Uint8Array(16);
-      const view = new DataView(iv.buffer);
-      view.setUint32(12, sequence >>> 0, false);
+      new DataView(iv.buffer).setUint32(12, sequence >>> 0, false);
       return iv;
     },
-
     async aesCbcDecrypt(data, keyBytes, ivBytes) {
-      if (!this.hasWebCrypto()) throw new Error('WebCrypto 不可用（需要 HTTPS 环境）');
-      if (data.length === 0) return data;
+      if (!ENV.webCryptoOk) throw new Error('WebCrypto 不可用（需 HTTPS）');
+      if (!data.length) return data;
       if (data.length % 16 !== 0) {
-        // 尝试对齐到 16 字节
         const aligned = data.length - (data.length % 16);
         if (aligned === 0) throw new Error('密文长度不足以解密');
         data = data.slice(0, aligned);
       }
-      // 密钥长度规范化
-      let keyBuf = keyBytes;
-      if (keyBuf.length !== 16 && keyBuf.length !== 24 && keyBuf.length !== 32) {
-        if (keyBuf.length > 16) keyBuf = keyBuf.slice(0, 16);
-        else {
-          const p = new Uint8Array(16); p.set(keyBuf); keyBuf = p;
-        }
+      let kb = keyBytes;
+      if (kb.length !== 16 && kb.length !== 24 && kb.length !== 32) {
+        if (kb.length > 16) kb = kb.slice(0, 16);
+        else { const p = new Uint8Array(16); p.set(kb); kb = p; }
       }
-      const key = await crypto.subtle.importKey('raw', keyBuf, { name: 'AES-CBC' }, false, ['decrypt']);
-      const decrypted = await crypto.subtle.decrypt({ name: 'AES-CBC', iv: ivBytes }, key, data);
-      return new Uint8Array(decrypted);
+      const key = await crypto.subtle.importKey('raw', kb, { name: 'AES-CBC' }, false, ['decrypt']);
+      const out = await crypto.subtle.decrypt({ name: 'AES-CBC', iv: ivBytes }, key, data);
+      return new Uint8Array(out);
     },
-
     async aesCtrDecrypt(data, keyBytes, counterBytes) {
-      if (!this.hasWebCrypto()) throw new Error('WebCrypto 不可用');
-      let keyBuf = keyBytes;
-      if (keyBuf.length !== 16 && keyBuf.length !== 24 && keyBuf.length !== 32) {
-        if (keyBuf.length > 16) keyBuf = keyBuf.slice(0, 16);
-        else { const p = new Uint8Array(16); p.set(keyBuf); keyBuf = p; }
+      if (!ENV.webCryptoOk) throw new Error('WebCrypto 不可用');
+      let kb = keyBytes;
+      if (kb.length !== 16 && kb.length !== 24 && kb.length !== 32) {
+        if (kb.length > 16) kb = kb.slice(0, 16);
+        else { const p = new Uint8Array(16); p.set(kb); kb = p; }
       }
-      const key = await crypto.subtle.importKey('raw', keyBuf, { name: 'AES-CTR' }, false, ['decrypt']);
-      const decrypted = await crypto.subtle.decrypt(
-        { name: 'AES-CTR', counter: counterBytes, length: 64 }, key, data
-      );
-      return new Uint8Array(decrypted);
+      const key = await crypto.subtle.importKey('raw', kb, { name: 'AES-CTR' }, false, ['decrypt']);
+      const out = await crypto.subtle.decrypt({ name: 'AES-CTR', counter: counterBytes, length: 64 }, key, data);
+      return new Uint8Array(out);
     },
-
-    // 统一入口
     async decryptSegment(data, keyInfo, sequence) {
       if (!keyInfo || !keyInfo.method || keyInfo.method === 'NONE') return data;
-
       const method = keyInfo.method.toUpperCase();
-
-      // DRM 格式无法前端解密
       if (keyInfo.keyFormat && keyInfo.keyFormat !== 'identity') {
-        throw new Error(`不支持 ${keyInfo.keyFormat} 加密（需 DRM 授权）`);
+        throw new Error(`不支持 ${keyInfo.keyFormat} 加密（需 DRM）`);
       }
-
-      // AES-128 / 192 / 256（CBC 模式）
       if (method === 'AES-128' || method === 'AES-192' || method === 'AES-256') {
-        const keyBytes = await this.getKeyBytes(keyInfo.uri);
-        const ivBytes = this.deriveIV(keyInfo, sequence);
-        return await this.aesCbcDecrypt(data, keyBytes, ivBytes);
+        const kb = await this.getKeyBytes(keyInfo.uri);
+        const iv = this.deriveIV(keyInfo, sequence);
+        return await this.aesCbcDecrypt(data, kb, iv);
       }
-
-      // SAMPLE-AES-CTR（CENC 风格 CTR）
       if (method === 'SAMPLE-AES-CTR') {
-        const keyBytes = await this.getKeyBytes(keyInfo.uri);
-        const ivBytes = this.deriveIV(keyInfo, sequence);
-        return await this.aesCtrDecrypt(data, keyBytes, ivBytes);
+        const kb = await this.getKeyBytes(keyInfo.uri);
+        const iv = this.deriveIV(keyInfo, sequence);
+        return await this.aesCtrDecrypt(data, kb, iv);
       }
-
-      // SAMPLE-AES（尽力按完整 CBC 尝试）
       if (method === 'SAMPLE-AES') {
-        const keyBytes = await this.getKeyBytes(keyInfo.uri);
-        const ivBytes = this.deriveIV(keyInfo, sequence);
-        try {
-          return await this.aesCbcDecrypt(data, keyBytes, ivBytes);
-        } catch (e) {
-          throw new Error('SAMPLE-AES 需要专用解密器（浏览器端暂无法完整支持）');
-        }
+        const kb = await this.getKeyBytes(keyInfo.uri);
+        const iv = this.deriveIV(keyInfo, sequence);
+        return await this.aesCbcDecrypt(data, kb, iv);
       }
-
       throw new Error('未知加密方法：' + method);
     }
   };
 
-  /* ================================================================
-   *  VodDownloader v4 · 高速下载内核（强化）
-   * ================================================================ */
-  const VodDownloader = {
-    active: false,
-    controller: null,
-    stats: { startTime: 0, downloadedBytes: 0, totalBytes: 0, completedSegments: 0, totalSegments: 0, speed: 0 },
+  const M3U8Parser = {
+    parse(text, baseUrl) {
+      if (typeof text !== 'string') throw new Error('无效 M3U8');
+      text = text.replace(/^\uFEFF/, '');
+      const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      if (!lines[0] || lines[0].indexOf('#EXTM3U') !== 0) throw new Error('缺少 #EXTM3U 头');
+      const result = {
+        isMaster: false, variants: [], segments: [], initSegment: null,
+        totalDuration: 0, mediaSequence: 0, hasEncryption: false, encMethods: new Set()
+      };
+      const resolve = (u) => { try { return new URL(u, baseUrl).href; } catch (e) { return u; } };
+      const parseAttrs = (line) => {
+        const attrs = {};
+        const re = /([A-Z0-9-]+)=("([^"]*)"|[^,]*)/gi;
+        let m;
+        while ((m = re.exec(line)) !== null) attrs[m[1].toUpperCase()] = m[3] !== undefined ? m[3] : m[2].trim();
+        return attrs;
+      };
+      let currentKey = null, currentByteRange = null, pendingDur = -1, pendingInf = null;
+      let seq = 0, lastByteRangeEnd = 0;
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line) continue;
+        if (line[0] !== '#') {
+          const uri = resolve(line);
+          if (pendingInf) { result.variants.push(Object.assign({ url: uri }, pendingInf)); pendingInf = null; continue; }
+          if (pendingDur >= 0) {
+            result.segments.push({ url: uri, duration: pendingDur, key: currentKey, sequence: seq, byteRange: currentByteRange });
+            seq++; pendingDur = -1; currentByteRange = null;
+          }
+          continue;
+        }
+        if (line.indexOf('#EXT-X-MEDIA-SEQUENCE:') === 0) { result.mediaSequence = parseInt(line.split(':')[1], 10) || 0; seq = result.mediaSequence; }
+        else if (line.indexOf('#EXT-X-STREAM-INF:') === 0) {
+          result.isMaster = true;
+          const a = parseAttrs(line);
+          pendingInf = { bandwidth: parseInt(a.BANDWIDTH, 10) || 0, resolution: a.RESOLUTION || '', name: a.NAME || '' };
+        } else if (line.indexOf('#EXT-X-KEY:') === 0) {
+          const a = parseAttrs(line);
+          const method = (a.METHOD || '').toUpperCase();
+          if (!method || method === 'NONE') currentKey = null;
+          else {
+            currentKey = { method, uri: a.URI ? resolve(a.URI) : null, iv: a.IV || null, keyFormat: a.KEYFORMAT || 'identity' };
+            result.hasEncryption = true;
+            result.encMethods.add(method);
+          }
+        } else if (line.indexOf('#EXT-X-MAP:') === 0) {
+          const a = parseAttrs(line);
+          if (a.URI) result.initSegment = { url: resolve(a.URI), key: currentKey };
+        } else if (line.indexOf('#EXT-X-BYTERANGE:') === 0) {
+          const parts = line.split(':')[1].split('@');
+          const length = parseInt(parts[0], 10);
+          let offset;
+          if (parts[1] !== undefined) { offset = parseInt(parts[1], 10); lastByteRangeEnd = offset + length; }
+          else if (lastByteRangeEnd > 0) { offset = lastByteRangeEnd; lastByteRangeEnd = offset + length; }
+          else { offset = 0; lastByteRangeEnd = length; }
+          currentByteRange = { length, offset };
+        } else if (line.indexOf('#EXTINF:') === 0) {
+          const rest = line.substring(8);
+          const ci = rest.indexOf(',');
+          pendingDur = parseFloat(ci >= 0 ? rest.substring(0, ci) : rest) || 0;
+          result.totalDuration += pendingDur;
+        }
+      }
+      return result;
+    }
+  };
 
+  const VodDownloader = {
+    active: false, controller: null,
+    stats: { startTime: 0, downloadedBytes: 0, totalBytes: 0, completedSegments: 0, totalSegments: 0, speed: 0 },
     isActive() { return this.active; },
 
-    async fetchText(url, signal) {
-      const res = await fetch(url, { signal, credentials: 'omit', mode: 'cors' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.text();
-    },
-
-    async fetchBinary(url, signal, byteRange) {
-      const headers = {};
-      if (byteRange && byteRange.length) {
-        const start = byteRange.offset || 0;
-        headers.Range = `bytes=${start}-${start + byteRange.length - 1}`;
-      }
-      const res = await fetch(url, { signal, credentials: 'omit', mode: 'cors', headers });
-      if (!res.ok && res.status !== 206) throw new Error('HTTP ' + res.status);
-      return new Uint8Array(await res.arrayBuffer());
-    },
-
-    // 递归解析 master playlist（最多 5 层）
     async resolvePlaylist(url, signal, depth) {
       depth = depth || 0;
-      if (depth > 5) throw new Error('M3U8 嵌套层级过深（>5）');
-      const text = await this.fetchText(url, signal);
-      const playlist = M3U8Parser.parse(text, url);
-
-      if (playlist.isMaster) {
-        if (!playlist.variants.length) {
-          if (playlist.iFrameVariants.length) {
-            return await this.resolvePlaylist(playlist.iFrameVariants[0].url, signal, depth + 1);
-          }
-          throw new Error('Master 播放列表中未找到可用视频流');
-        }
-
-        // 排序：分辨率优先，带宽次之
-        const sorted = playlist.variants.slice().sort((a, b) => {
-          const sa = M3U8Parser.resolutionScore(a.resolution);
-          const sb = M3U8Parser.resolutionScore(b.resolution);
-          if (sb !== sa) return sb - sa;
-          const ba = a.bandwidth || a.averageBandwidth || 0;
-          const bb = b.bandwidth || b.averageBandwidth || 0;
-          return bb - ba;
-        });
-
-        const best = sorted[0];
-        const audioInfo = best.audioGroup && playlist.mediaGroups.AUDIO && playlist.mediaGroups.AUDIO[best.audioGroup]
-          ? playlist.mediaGroups.AUDIO[best.audioGroup][0] : null;
-
-        const label = best.resolution ? ` [${best.resolution}]` : (best.name ? ` [${best.name}]` : '');
-        const bw = best.bandwidth || best.averageBandwidth || 0;
-        const bwLabel = bw ? ` ${Math.round(bw / 1000)}kbps` : '';
-        this.setState('preparing', { sub: `已选流${label}${bwLabel}，继续解析…` });
-
-        const media = await this.resolvePlaylist(best.url, signal, depth + 1);
-        media._variantInfo = best;
-        media._audioInfo = audioInfo;
-        media._masterPlaylist = playlist;
-        return media;
+      if (depth > 5) throw new Error('M3U8 嵌套过深');
+      const { text } = await SafeFetch.text(url, signal);
+      if (!looksLikeM3U8(text)) {
+        throw new Error('服务器返回的不是 M3U8（可能是 HTML/JSON 或被替换）');
       }
-
+      const playlist = M3U8Parser.parse(text, url);
+      if (playlist.isMaster) {
+        if (!playlist.variants.length) throw new Error('Master 无可用流');
+        playlist.variants.sort((a, b) => {
+          const sa = (a.resolution || '0x0').split('x').reduce((x, y) => x * parseInt(y, 10), 1) || 0;
+          const sb = (b.resolution || '0x0').split('x').reduce((x, y) => x * parseInt(y, 10), 1) || 0;
+          if (sb !== sa) return sb - sa;
+          return (b.bandwidth || 0) - (a.bandwidth || 0);
+        });
+        const best = playlist.variants[0];
+        this.setState('preparing', { sub: '已选流 ' + (best.resolution || best.name || '') + '，继续解析…' });
+        return await this.resolvePlaylist(best.url, signal, depth + 1);
+      }
       return playlist;
     },
 
-    // 提取播放信息用于 UI
-    buildInfoLabel(playlist) {
-      const parts = [];
-      if (playlist._variantInfo) {
-        const v = playlist._variantInfo;
-        if (v.resolution) parts.push(v.resolution);
-        if (v.codecs) {
-          const codecShort = v.codecs.split(',').map((c) => {
-            const m = c.match(/^(avc1|hvc1|hev1|mp4a|opus|ac-3|ec-3|vp09|av01)/i);
-            return m ? m[1] : null;
-          }).filter(Boolean).join('/');
-          if (codecShort) parts.push(codecShort);
-        }
-      }
-      if (playlist.hasEncryption) {
-        const methods = Array.from(playlist.encMethods);
-        if (methods.length === 1) parts.push(methods[0]);
-        else if (methods.length > 1) parts.push(methods.join('+'));
-      } else {
-        parts.push('未加密');
-      }
-      if (playlist.hasMap) parts.push('fMP4');
-      else if (playlist.segments.length && /\.ts(\?|#|$)/i.test(playlist.segments[0].url)) parts.push('TS');
-      return parts.join(' · ');
-    },
-
-    // 直链下载
     async downloadDirect(url, signal) {
       this.setState('downloading', { sub: '正在下载视频文件…' });
-      const res = await fetch(url, { signal, credentials: 'omit', mode: 'cors' });
+      const res = await SafeFetch.get(url, signal);
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const total = parseInt(res.headers.get('content-length') || '0', 10);
       this.stats.totalBytes = total;
-      const chunks = [];
-      const reader = res.body.getReader();
+      const chunks = [], reader = res.body.getReader();
       let received = 0, lastUi = 0;
       while (true) {
         const { done, value } = await reader.read();
@@ -1497,64 +1501,32 @@
       this.updateProgressUI();
       this.setState('merging', { sub: '正在保存文件…' });
       const ext = (url.match(/\.(mp4|webm|mov|m4v|mkv|flv|avi|wmv|3gp)(\?|#|$)/i) || [, 'mp4'])[1];
-      const mime = 'video/' + (ext === 'mov' ? 'quicktime' : ext);
       const filename = this.guessFilename(url, ext);
-      const size = this.saveBlob(chunks, filename, mime);
+      const size = this.saveBlob(chunks, filename, 'video/' + ext);
       this.setState('done', { sub: '已保存 · ' + fmtBytes(size) });
       toast('下载完成 · ' + fmtBytes(size));
     },
 
-    // M3U8 下载（强化）
     async downloadM3U8(url, signal) {
-      // 1. 递归解析
       const playlist = await this.resolvePlaylist(url, signal);
       if (!playlist.segments.length) throw new Error('未找到视频片段');
-
-      // 2. 加密检查
       const methods = new Set();
       if (playlist.initSegment && playlist.initSegment.key) methods.add(playlist.initSegment.key.method);
       playlist.segments.forEach((s) => { if (s.key) methods.add(s.key.method); });
+      if (methods.has('SAMPLE-AES')) throw new Error('SAMPLE-AES 需专用解密器');
 
-      if (methods.has('SAMPLE-AES')) {
-        throw new Error('SAMPLE-AES 加密流需要专用解密器，浏览器端暂无法完整支持');
-      }
-
-      const encLabel = this.buildInfoLabel(playlist);
+      const encLabel = playlist.hasEncryption ? Array.from(playlist.encMethods).join('+') : '未加密';
       const isFMP4 = !!playlist.initSegment;
       const ext = isFMP4 ? 'mp4' : 'ts';
       const mime = isFMP4 ? 'video/mp4' : 'video/mp2t';
       const total = playlist.segments.length;
-      const totalPlusInit = total + (playlist.initSegment ? 1 : 0);
-      this.stats.totalSegments = totalPlusInit;
+      this.stats.totalSegments = total + (playlist.initSegment ? 1 : 0);
+      this.setState('downloading', { sub: `共 ${total} 段 · ${encLabel}` });
 
-      const segCountLabel = `共 ${total} 段`;
-      this.setState('downloading', { sub: `${segCountLabel} · ${encLabel}` });
-
-      // 3. 并发下载
       const chunks = new Array(total);
-      const concurrency = Math.min(12, Math.max(4, (ENV.cores || 4)));
+      const concurrency = Math.min(12, Math.max(4, ENV.cores || 4));
       let nextIndex = 0, completed = 0, lastUi = 0;
       const self = this;
-
-      const downloadOne = async (seg) => {
-        let attempts = 0, lastErr;
-        while (attempts < 3) {
-          try {
-            let data = await self.fetchBinary(seg.url, signal, seg.byteRange);
-            if (seg.key && seg.key.method && seg.key.method !== 'NONE') {
-              data = await Decryptor.decryptSegment(data, seg.key, seg.sequence);
-            }
-            return data;
-          } catch (err) {
-            lastErr = err;
-            attempts++;
-            if (signal.aborted) throw err;
-            if (attempts >= 3) throw err;
-            await new Promise((r) => setTimeout(r, 300 * attempts));
-          }
-        }
-        throw lastErr;
-      };
 
       const worker = async () => {
         while (true) {
@@ -1562,7 +1534,23 @@
           const idx = nextIndex++;
           if (idx >= total) return;
           const seg = playlist.segments[idx];
-          chunks[idx] = await downloadOne(seg);
+          let attempts = 0, lastErr;
+          while (attempts < 3) {
+            try {
+              let data = await SafeFetch.binary(seg.url, signal, seg.byteRange);
+              if (seg.key && seg.key.method && seg.key.method !== 'NONE') {
+                data = await Decryptor.decryptSegment(data, seg.key, seg.sequence);
+              }
+              chunks[idx] = data;
+              lastErr = null;
+              break;
+            } catch (err) {
+              lastErr = err; attempts++;
+              if (attempts >= 3 || signal.aborted) throw err;
+              await new Promise((r) => setTimeout(r, 300 * attempts));
+            }
+          }
+          if (lastErr) throw lastErr;
           completed++;
           self.stats.completedSegments = completed;
           self.stats.downloadedBytes += chunks[idx].byteLength;
@@ -1570,28 +1558,25 @@
           if (now - lastUi > 180) {
             lastUi = now;
             self.updateProgressUI();
-            dlSub.textContent = `${segCountLabel} · ${encLabel} · 已完成 ${completed}/${total}`;
+            dlSub.textContent = `共 ${total} 段 · ${encLabel} · 已完成 ${completed}/${total}`;
           }
         }
       };
-
       const workers = [];
       for (let i = 0; i < concurrency; i++) workers.push(worker());
       await Promise.all(workers);
       self.updateProgressUI();
 
-      // 4. 初始化段（如有）
       let initData = null;
       if (playlist.initSegment) {
-        this.setState('merging', { sub: '正在处理初始化段…' });
-        initData = await self.fetchBinary(playlist.initSegment.url, signal, playlist.initSegment.byteRange);
-        if (playlist.initSegment.key && playlist.initSegment.key.method && playlist.initSegment.key.method !== 'NONE') {
+        this.setState('merging', { sub: '处理初始化段…' });
+        initData = await SafeFetch.binary(playlist.initSegment.url, signal, null);
+        if (playlist.initSegment.key && playlist.initSegment.key.method !== 'NONE') {
           initData = await Decryptor.decryptSegment(initData, playlist.initSegment.key, 0);
         }
       }
 
-      // 5. 合并保存
-      this.setState('merging', { sub: `正在合并 ${totalPlusInit} 个分片…` });
+      this.setState('merging', { sub: `合并 ${this.stats.totalSegments} 个分片…` });
       dlBar.classList.add('indeterminate');
 
       const parts = [];
@@ -1600,7 +1585,6 @@
 
       const filename = self.guessFilename(url, ext);
       const size = self.saveBlob(parts, filename, mime);
-
       this.setState('done', { sub: `已保存 · ${fmtBytes(size)} · ${filename}` });
       toast('下载完成 · ' + fmtBytes(size));
     },
@@ -1638,7 +1622,7 @@
         dlProgress.hidden = true;
         dlStartBtn.disabled = false;
         dlStartBtn.textContent = '开始下载';
-        dlSub.textContent = info.sub || 'M3U8 · AES-128/192/256 · SAMPLE-AES-CTR · fMP4 · 直链';
+        dlSub.textContent = info.sub || 'M3U8 · AES-128/192/256 · fMP4 · 直链 · 全程 no-referrer';
       } else if (state === 'preparing') {
         dlCard.classList.add('active');
         dlProgress.hidden = false;
@@ -1646,18 +1630,13 @@
         dlStartBtn.textContent = '准备中';
         dlBar.classList.add('indeterminate');
         dlBar.style.width = '';
-        dlPercent.textContent = '0%';
-        dlSpeed.textContent = '--';
-        dlRemain.textContent = '--';
-        dlSize.textContent = '--';
-        dlCancelBtn.disabled = false;
-        dlCancelBtn.textContent = '取消下载';
-        dlSub.textContent = info.sub || '正在解析链接…';
+        dlPercent.textContent = '0%'; dlSpeed.textContent = '--'; dlRemain.textContent = '--'; dlSize.textContent = '--';
+        dlCancelBtn.disabled = false; dlCancelBtn.textContent = '取消下载';
+        dlSub.textContent = info.sub || '正在解析…';
       } else if (state === 'downloading') {
         dlCard.classList.add('active');
         dlProgress.hidden = false;
-        dlStartBtn.disabled = true;
-        dlStartBtn.textContent = '下载中';
+        dlStartBtn.disabled = true; dlStartBtn.textContent = '下载中';
         dlBar.classList.remove('indeterminate');
         dlCancelBtn.disabled = false;
         dlSub.textContent = info.sub || '正在下载…';
@@ -1665,32 +1644,27 @@
         dlCard.classList.add('active');
         dlProgress.hidden = false;
         dlBar.classList.add('indeterminate');
-        dlStartBtn.disabled = true;
-        dlStartBtn.textContent = '合并中';
+        dlStartBtn.disabled = true; dlStartBtn.textContent = '合并中';
         dlCancelBtn.disabled = true;
         dlSub.textContent = info.sub || '正在合并…';
       } else if (state === 'done') {
         dlCard.classList.remove('active');
-        dlStartBtn.disabled = false;
-        dlStartBtn.textContent = '重新下载';
+        dlStartBtn.disabled = false; dlStartBtn.textContent = '重新下载';
         dlBar.classList.remove('indeterminate');
         dlBar.style.width = '100%';
         dlPercent.textContent = '100%';
-        dlCancelBtn.disabled = true;
-        dlCancelBtn.textContent = '已完成';
-        dlSub.textContent = info.sub || '已保存到本地';
+        dlCancelBtn.disabled = true; dlCancelBtn.textContent = '已完成';
+        dlSub.textContent = info.sub || '已保存';
       } else if (state === 'error') {
         dlCard.classList.remove('active');
-        dlStartBtn.disabled = false;
-        dlStartBtn.textContent = '重试';
+        dlStartBtn.disabled = false; dlStartBtn.textContent = '重试';
         dlBar.classList.remove('indeterminate');
         dlCancelBtn.disabled = true;
         dlSub.textContent = '下载失败';
       } else if (state === 'canceled') {
         dlCard.classList.remove('active');
         dlProgress.hidden = true;
-        dlStartBtn.disabled = false;
-        dlStartBtn.textContent = '重新下载';
+        dlStartBtn.disabled = false; dlStartBtn.textContent = '重新下载';
         dlSub.textContent = '已取消';
       }
     },
@@ -1709,34 +1683,24 @@
       dlSpeed.textContent = fmtSpeed(speed);
       dlSize.textContent = fmtBytes(s.downloadedBytes);
       if (speed > 0 && s.totalSegments > 0 && s.completedSegments > 0) {
-        const avgPerSeg = s.downloadedBytes / s.completedSegments;
-        const remainingBytes = (s.totalSegments - s.completedSegments) * avgPerSeg;
-        dlRemain.textContent = fmtRemain(remainingBytes / speed);
+        const avg = s.downloadedBytes / s.completedSegments;
+        dlRemain.textContent = fmtRemain((s.totalSegments - s.completedSegments) * avg / speed);
       } else if (speed > 0 && s.totalBytes > 0) {
         dlRemain.textContent = fmtRemain((s.totalBytes - s.downloadedBytes) / speed);
-      } else {
-        dlRemain.textContent = '--';
-      }
+      } else dlRemain.textContent = '--';
     },
 
     async start(url) {
-      if (this.active) { toast('已有下载任务进行中'); return; }
+      if (this.active) { toast('已有下载任务'); return; }
       if (!url) { toast('请先输入链接'); return; }
-
-      if (!ENV.webCryptoOk) {
-        this.setWarn('⚠️ 当前环境不支持 WebCrypto（通常需要 HTTPS 或 localhost），加密流将无法解密。');
-      } else {
-        this.setWarn('');
-      }
-
+      if (!ENV.webCryptoOk) this.setWarn('⚠️ 当前环境不支持 WebCrypto（需 HTTPS），加密流将无法解密。');
+      else this.setWarn('');
       this.active = true;
       this.controller = new AbortController();
       this.stats = { startTime: Date.now(), downloadedBytes: 0, totalBytes: 0, completedSegments: 0, totalSegments: 0, speed: 0 };
       Decryptor.reset();
-
-      this.setState('preparing', { sub: '正在解析链接…' });
+      this.setState('preparing', { sub: '正在解析…' });
       const signal = this.controller.signal;
-
       try {
         if (/\.(mp4|webm|ogg|ogv|mov|m4v|flv|mkv|avi|wmv|3gp)(\?|#|$)/i.test(url)) {
           await this.downloadDirect(url, signal);
@@ -1745,8 +1709,7 @@
         }
       } catch (err) {
         if (signal.aborted || err.name === 'AbortError') {
-          this.setState('canceled');
-          toast('已取消下载');
+          this.setState('canceled'); toast('已取消下载');
         } else {
           console.error('[VodDownloader]', err);
           this.setState('error');
@@ -1754,14 +1717,10 @@
           let hint = '⚠️ ' + msg;
           if (/Failed to fetch|NetworkError|Load failed/i.test(msg)) {
             hint = '⚠️ 网络请求被阻止，目标服务器可能未开启 CORS。<br>请确认链接可直接访问，或换用支持跨域的源。';
-          } else if (/SAMPLE-AES/i.test(msg)) {
-            hint = '⚠️ ' + msg + '<br>SAMPLE-AES 需要解析容器内的 sample 结构，浏览器端无法实现。';
+          } else if (/不是 M3U8|HTML|JSON/i.test(msg)) {
+            hint = '⚠️ ' + msg + '<br>你复制的可能不是视频源地址，请用「诊断」查看实际返回内容。';
           } else if (/WebCrypto/i.test(msg)) {
-            hint = '⚠️ ' + msg + '<br>请使用 HTTPS 部署，或改用 localhost 测试。';
-          } else if (/DRM|widevine|playready|fairplay/i.test(msg)) {
-            hint = '⚠️ ' + msg + '<br>DRM 内容需授权播放，无法直接下载。';
-          } else if (/密钥请求失败|HTTP 403|HTTP 401/i.test(msg)) {
-            hint = '⚠️ ' + msg + '<br>密钥服务器可能限制了跨域请求。';
+            hint = '⚠️ ' + msg + '<br>请使用 HTTPS 部署。';
           }
           this.setWarn(hint);
           toast('下载失败：' + msg);
@@ -1785,20 +1744,17 @@
       dlProgress.hidden = true;
       dlStartBtn.disabled = false;
       dlStartBtn.textContent = '开始下载';
-      dlSub.textContent = 'M3U8 · AES-128/192/256 · SAMPLE-AES-CTR · fMP4 · 直链';
+      dlSub.textContent = 'M3U8 · AES-128/192/256 · fMP4 · 直链 · 全程 no-referrer';
     }
   };
 
-  /* ================= 下载按钮 ================= */
   dlStartBtn.addEventListener('click', () => {
-    if (VodDownloader.isActive()) { toast('已有下载任务进行中'); return; }
+    if (VodDownloader.isActive()) { toast('已有下载任务'); return; }
     const url = currentUrl || urlInput.value.trim();
-    if (!url) { toast('请先在顶部输入链接并播放'); return; }
+    if (!url) { toast('请先输入链接'); return; }
     VodDownloader.start(url);
   });
-  dlCancelBtn.addEventListener('click', () => {
-    if (VodDownloader.isActive()) VodDownloader.cancel();
-  });
+  dlCancelBtn.addEventListener('click', () => { if (VodDownloader.isActive()) VodDownloader.cancel(); });
 
   const _origLoad = VodCore.load.bind(VodCore);
   VodCore.load = async function (url, resumeAt) {
@@ -1807,11 +1763,7 @@
   };
 
   /* ================= 初始化 ================= */
-  syncPlayIcon();
-  renderMarks();
-  updateDecoderBtn();
-  updateFsIcon();
-  showControls();
+  syncPlayIcon(); renderMarks(); updateDecoderBtn(); updateFsIcon(); showControls();
   VodCore.setStatus('内核就绪', true);
 
   let lastUrl = '';
@@ -1819,15 +1771,15 @@
   if (lastUrl) urlInput.value = lastUrl;
 
   console.log(
-    `%cVodCore v${VodCore.version} %c强化解析 + 强化解密 已就绪`,
+    `%cVodCore v${VodCore.version} %c防盗链修复版 · 全程 no-referrer`,
     'background:linear-gradient(90deg,#4d8dff,#8f6bff);color:#fff;padding:2px 6px;border-radius:4px;font-weight:bold;',
     'color:#4d8dff;font-weight:bold;'
   );
-  console.log('环境探测：', ENV);
-  console.log('WebCrypto：', ENV.webCryptoOk ? '✅ 可用' : '❌ 不可用（需 HTTPS）');
+  console.log('Referrer Policy：no-referrer（所有请求）');
+  console.log('WebCrypto：', ENV.webCryptoOk ? '✅' : '❌ 需 HTTPS');
   console.log('智能解码推荐：', SmartDecoder.pick());
 
 })();
 </script>
 </body>
-        </html>
+    </html>
