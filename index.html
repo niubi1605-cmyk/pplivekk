@@ -2,1967 +2,985 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="referrer" content="no-referrer">
-<meta name="theme-color" content="#08090d">
-<title>VodCore 2 · 反盗链增强</title>
-<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>闪电视频下载器 · 极速下载 1080P</title>
 <style>
 :root{
-  --bg:#08090d;--bg-2:#0f1219;--card:rgba(255,255,255,.028);--card-h:rgba(255,255,255,.05);
-  --line:rgba(255,255,255,.07);--line-2:rgba(255,255,255,.12);
-  --text:#eef1f8;--text-2:#a8b0c4;--text-3:#6b7385;
-  --brand:#5b8dff;--brand-2:#8b5cf6;--gold:#ffd166;--red:#ff5f5f;--green:#3ddc97;
-  --r-sm:8px;--r:12px;--r-lg:16px;--r-xl:22px;
-  --ease:cubic-bezier(.4,0,.2,1);
+  --bg:#0a0d13;
+  --card:#11151d;
+  --card2:#161b26;
+  --line:rgba(255,255,255,.08);
+  --text:#e6e9ef;
+  --muted:#7d8798;
+  --red:#ff3b30;
+  --red2:#ff6b35;
+  --green:#22c55e;
 }
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
-html,body{height:100%}
+*{box-sizing:border-box;}
+html,body{height:100%;}
 body{
-  background:var(--bg);color:var(--text);
-  font:14px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
-  -webkit-font-smoothing:antialiased;overscroll-behavior-y:contain;
-  background-image:
-    radial-gradient(800px 400px at 50% -10%,rgba(91,141,255,.13),transparent 60%),
-    radial-gradient(600px 300px at 100% 100%,rgba(139,92,246,.08),transparent 60%);
+  margin:0;
+  min-height:100%;
+  background:
+    radial-gradient(900px 520px at 12% -12%, rgba(255,59,48,.16), transparent 62%),
+    radial-gradient(760px 420px at 92% -6%, rgba(124,58,237,.14), transparent 62%),
+    var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;
 }
-button,input,select{font-family:inherit}
-button{cursor:pointer;border:none;background:none;color:inherit}
-input{outline:none}
-
-/* ============ 主容器 ============ */
-.app{max-width:1080px;margin:0 auto;padding:14px 14px calc(24px + env(safe-area-inset-bottom));
-  display:flex;flex-direction:column;gap:12px}
+button{font-family:inherit;}
+::-webkit-scrollbar{width:9px;height:9px;}
+::-webkit-scrollbar-thumb{background:#232a38;border-radius:6px;}
+::-webkit-scrollbar-track{background:transparent;}
 
 /* ============ 顶栏 ============ */
-.topbar{display:flex;align-items:center;gap:10px;padding:2px 2px}
-.logo{width:32px;height:32px;border-radius:10px;flex:none;
-  background:linear-gradient(135deg,var(--brand),var(--brand-2));
-  display:grid;place-items:center;box-shadow:0 4px 16px rgba(91,141,255,.35),inset 0 1px 0 rgba(255,255,255,.2)}
-.logo svg{width:18px;height:18px;color:#fff}
-.brand{font-weight:800;font-size:16px;letter-spacing:.01em}
-.brand em{font-style:normal;color:var(--text-3);font-size:11px;font-weight:600;margin-left:5px;letter-spacing:.04em}
-.shield{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;
-  color:var(--green);background:rgba(61,220,151,.08);border:1px solid rgba(61,220,151,.22);
-  padding:4px 9px;border-radius:99px;backdrop-filter:blur(8px)}
-.shield i{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);
-  animation:dot 2s ease-in-out infinite}
-@keyframes dot{50%{opacity:.4;transform:scale(.85)}}
+.topbar{
+  position:sticky;top:0;z-index:120;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;padding:14px 28px;
+  background:rgba(10,13,19,.78);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);
+}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:16px;letter-spacing:.3px;}
+.logo-icon{
+  width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:15px;
+  background:linear-gradient(135deg,var(--red),var(--red2));
+  box-shadow:0 6px 18px rgba(255,59,48,.4);
+}
+.tabs{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.tab{
+  border:none;background:transparent;color:#98a2b3;
+  padding:9px 15px;border-radius:10px;font-size:14px;font-weight:500;
+  cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px;
+}
+.tab:hover{background:rgba(255,255,255,.06);color:#e6e9ef;}
+.tab.active{background:rgba(255,59,48,.14);color:#ff7a70;}
+.badge{
+  display:none;place-items:center;min-width:18px;height:18px;padding:0 5px;
+  border-radius:9px;background:var(--red);color:#fff;font-size:11px;font-weight:700;
+}
+.badge.on{display:inline-grid;}
 
-/* ============ URL 栏 ============ */
-.url-bar{display:flex;gap:8px;position:relative}
-.url-bar .field{flex:1;position:relative;display:flex;align-items:center;
-  background:var(--card);border:1px solid var(--line);border-radius:var(--r);
-  transition:border-color .2s var(--ease),background .2s var(--ease);
-  backdrop-filter:blur(10px)}
-.url-bar .field:focus-within{border-color:rgba(91,141,255,.5);background:rgba(91,141,255,.04);
-  box-shadow:0 0 0 4px rgba(91,141,255,.08)}
-.url-bar .field svg{width:15px;height:15px;color:var(--text-3);margin-left:13px;flex:none;pointer-events:none}
-.url-bar input{flex:1;background:none;border:none;color:var(--text);padding:12px 12px;
-  font-size:14px;min-width:0}
-.url-bar input::placeholder{color:var(--text-3)}
-.url-bar .paste{padding:0 12px;color:var(--text-3);font-size:11px;font-weight:600;
-  transition:color .15s;height:100%;display:grid;place-items:center}
-.url-bar .paste:hover{color:var(--brand)}
-.play-btn{padding:0 22px;border-radius:var(--r);font-size:14px;font-weight:700;color:#fff;
-  background:linear-gradient(180deg,var(--brand),#4a7be6);
-  box-shadow:0 4px 14px rgba(91,141,255,.28),inset 0 1px 0 rgba(255,255,255,.16);
-  transition:transform .08s var(--ease),box-shadow .2s}
-.play-btn:active{transform:scale(.97);box-shadow:0 2px 8px rgba(91,141,255,.25)}
+/* ============ 布局 ============ */
+main{max-width:880px;margin:0 auto;padding:44px 22px 100px;}
+.view{display:none;}
+.view.active{display:block;animation:viewIn .35s ease;}
+@keyframes viewIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
 
-/* ============ 播放器 ============ */
-.player{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:var(--r-lg);
-  overflow:hidden;border:1px solid var(--line);isolation:isolate;
-  box-shadow:0 10px 40px rgba(0,0,0,.4)}
-.player:fullscreen{aspect-ratio:auto;width:100vw;height:100vh;border-radius:0;border:none}
-.player:-webkit-full-screen{aspect-ratio:auto;width:100vw;height:100vh;border-radius:0;border:none}
-video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
+/* ============ 首页 Hero ============ */
+.hero{text-align:center;margin-bottom:30px;}
+.pill{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:12.5px;color:#9fb0c9;background:rgba(255,255,255,.05);
+  border:1px solid var(--line);padding:6px 14px;border-radius:100px;margin-bottom:20px;
+}
+.pill i{width:7px;height:7px;border-radius:50%;background:var(--green);display:block;
+  box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:livePulse 1.8s infinite;}
+@keyframes livePulse{70%{box-shadow:0 0 0 8px rgba(34,197,94,0);}100%{box-shadow:0 0 0 0 rgba(34,197,94,0);}}
+h1{font-size:clamp(26px,5vw,40px);margin:0 0 12px;line-height:1.25;letter-spacing:-.5px;}
+.grad{background:linear-gradient(100deg,#ff3b30,#ff8a3d 55%,#ffb020);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.sub{color:var(--muted);font-size:14.5px;margin:0;}
 
-/* 播放器状态角标 */
-.pbadge{position:absolute;top:10px;left:10px;z-index:6;display:flex;align-items:center;gap:6px;
-  background:rgba(10,12,18,.65);border:1px solid rgba(255,255,255,.09);border-radius:99px;
-  padding:5px 11px;font-size:10.5px;font-weight:700;letter-spacing:.02em;
-  backdrop-filter:blur(12px);pointer-events:none;opacity:0;
-  transition:opacity .28s var(--ease),transform .28s var(--ease);transform:translateY(-4px);
-  max-width:calc(100% - 20px);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.pbadge.show{opacity:1;transform:translateY(0)}
-.pbadge i{width:5px;height:5px;border-radius:50%;background:var(--green);
-  box-shadow:0 0 6px var(--green);flex:none}
-.pbadge i.warn{background:var(--gold);box-shadow:0 0 6px var(--gold)}
-.pbadge i.err{background:var(--red);box-shadow:0 0 6px var(--red)}
+/* ============ 输入行 ============ */
+.input-row{
+  display:flex;gap:10px;align-items:center;
+  background:#141822;border:1px solid var(--line);border-radius:15px;
+  padding:8px;margin-top:30px;transition:.25s;
+}
+.input-row:focus-within{border-color:rgba(255,59,48,.65);box-shadow:0 0 0 4px rgba(255,59,48,.12);}
+.input-row input{
+  flex:1;background:none;border:none;outline:none;color:#fff;
+  font-size:15px;padding:12px 14px;min-width:0;font-family:inherit;
+}
+.input-row input::placeholder{color:#5b6478;}
+#parseBtn{
+  border:none;border-radius:11px;padding:13px 30px;font-size:15px;font-weight:600;
+  color:#fff;cursor:pointer;white-space:nowrap;
+  background:linear-gradient(135deg,var(--red),var(--red2));
+  box-shadow:0 8px 22px rgba(255,59,48,.35);transition:.22s;
+}
+#parseBtn:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(255,59,48,.45);}
+#parseBtn:disabled{opacity:.6;cursor:wait;transform:none;}
+.shake{animation:shake .4s;}
+@keyframes shake{
+  0%,100%{transform:translateX(0);}
+  20%{transform:translateX(-8px);}40%{transform:translateX(8px);}
+  60%{transform:translateX(-5px);}80%{transform:translateX(5px);}
+}
 
-/* 大播放按钮 */
-.bigplay{position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.92);
-  pointer-events:none;opacity:0;transition:opacity .22s var(--ease);
-  background:radial-gradient(circle at center,rgba(0,0,0,.3),transparent 65%)}
-.bigplay.show{opacity:1}
-.bigplay svg{filter:drop-shadow(0 4px 18px rgba(0,0,0,.7))}
+.hint-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px;}
+.hint-chip{
+  font-size:12px;color:#7d8798;background:rgba(255,255,255,.045);
+  border:1px solid var(--line);padding:5px 12px;border-radius:100px;cursor:pointer;transition:.2s;
+}
+.hint-chip:hover{color:#ff7a70;border-color:rgba(255,59,48,.4);background:rgba(255,59,48,.08);}
 
-/* 加载环 */
-.loader{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.28);
-  z-index:5;opacity:0;pointer-events:none;transition:opacity .2s var(--ease)}
-.loader.show{opacity:1}
-.loader::after{content:"";width:36px;height:36px;border-radius:50%;
-  border:3px solid rgba(255,255,255,.15);border-top-color:var(--brand);
-  animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+/* ============ 弹出小窗口 ============ */
+.popover{
+  display:none;margin-top:20px;background:var(--card);
+  border:1px solid var(--line);border-radius:18px;overflow:hidden;
+  box-shadow:0 34px 70px -26px rgba(0,0,0,.85);
+}
+.popover.show{display:block;animation:popIn .4s cubic-bezier(.2,.9,.3,1.1);}
+@keyframes popIn{from{opacity:0;transform:translateY(-16px) scale(.98);}to{opacity:1;transform:none;}}
 
-/* 控制栏 */
-.ctrl{position:absolute;left:0;right:0;bottom:0;z-index:4;padding:36px 12px 8px;
-  background:linear-gradient(180deg,transparent,rgba(0,0,0,.85));
-  transition:opacity .25s var(--ease),transform .25s var(--ease);user-select:none;-webkit-user-select:none}
-.ctrl.hide{opacity:0;transform:translateY(8px);pointer-events:none}
+.pop-head{
+  display:flex;align-items:center;gap:9px;padding:12px 16px;
+  font-size:13px;color:#9aa4b5;background:#141924;border-bottom:1px solid var(--line);
+}
+.pop-head b{color:#fff;}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:livePulse 1.8s infinite;flex-shrink:0;}
+.pop-close{
+  margin-left:auto;background:none;border:none;color:#6b7487;font-size:20px;
+  line-height:1;cursor:pointer;padding:2px 6px;border-radius:6px;transition:.2s;
+}
+.pop-close:hover{background:rgba(255,255,255,.08);color:#fff;}
 
-/* 进度条 */
-.pbar{position:relative;height:24px;display:flex;align-items:center;
-  cursor:pointer;touch-action:none}
-.pbar .track{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
-  height:3px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden}
-.pbar .buf{position:absolute;left:0;top:50%;transform:translateY(-50%);width:0;
-  height:3px;border-radius:99px;background:rgba(255,255,255,.24);transition:width .15s linear}
-.pbar .played{position:absolute;left:0;top:50%;transform:translateY(-50%);width:0;
-  height:3px;border-radius:99px;
-  background:linear-gradient(90deg,var(--brand),var(--brand-2));
-  box-shadow:0 0 10px rgba(91,141,255,.6)}
-.pbar .thumb{position:absolute;top:50%;left:0;width:13px;height:13px;border-radius:50%;
-  background:#fff;transform:translate(-50%,-50%);
-  box-shadow:0 0 0 3px rgba(91,141,255,.35);
-  opacity:0;transition:opacity .15s;pointer-events:none}
-.pbar:hover .thumb,.pbar.dragging .thumb{opacity:1}
-.pbar .marks{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
-  height:14px;pointer-events:none}
-.pbar .marks i{position:absolute;top:0;width:2px;height:14px;border-radius:2px;
-  background:var(--gold);transform:translateX(-1px);box-shadow:0 0 6px rgba(255,209,102,.8)}
+/* 视频舞台 */
+.video-stage{
+  position:relative;aspect-ratio:16/9;background:#0d1117;overflow:hidden;
+  cursor:pointer;display:grid;place-items:center;
+}
+.stage-glow{
+  position:absolute;inset:-45%;
+  background:conic-gradient(from 0deg,#ff3b30,#7c3aed,#06b6d4,#ffb020,#ff3b30);
+  filter:blur(72px);opacity:.22;animation:spin 14s linear infinite;
+  animation-play-state:paused;
+}
+.video-stage.playing .stage-glow{animation-play-state:running;}
+@keyframes spin{to{transform:rotate(360deg);}}
 
-/* 控制按钮行 */
-.ctrl-row{display:flex;align-items:center;gap:4px;margin-top:1px}
-.cbtn{background:none;border:none;color:#fff;width:38px;height:38px;border-radius:10px;
-  display:grid;place-items:center;flex:none;padding:0;
-  transition:background .15s var(--ease),transform .08s var(--ease)}
-.cbtn:hover{background:rgba(255,255,255,.1)}
-.cbtn:active{transform:scale(.92)}
-.cbtn svg{width:19px;height:19px;pointer-events:none}
-.time{font-variant-numeric:tabular-nums;font-size:11.5px;color:rgba(255,255,255,.82);
-  margin-left:4px;white-space:nowrap;pointer-events:none;font-weight:500}
-.spacer{flex:1}
-.rate{-webkit-appearance:none;appearance:none;background:rgba(255,255,255,.1);color:#fff;
-  border:none;border-radius:9px;padding:7px 10px;font-size:12.5px;font-weight:700;
-  cursor:pointer;font-variant-numeric:tabular-nums;transition:background .15s}
-.rate:hover{background:rgba(255,255,255,.16)}
-.rate option{background:#161b28}
+.play-btn{
+  position:relative;z-index:2;
+  width:74px;height:74px;border-radius:50%;border:none;padding-left:5px;
+  background:linear-gradient(135deg,#ff3b30,#ff6b35);color:#fff;
+  display:grid;place-items:center;cursor:pointer;
+  box-shadow:0 14px 38px rgba(255,59,48,.5);
+  transition:transform .28s cubic-bezier(.2,.9,.3,1.5),opacity .25s;
+}
+.play-btn:hover{transform:scale(1.1);}
+.video-stage.playing .play-btn{opacity:0;transform:scale(.55);pointer-events:none;}
 
-/* ============ 工具栏 ============ */
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.tbtn{flex:none;display:inline-flex;align-items:center;gap:6px;padding:9px 13px;
-  border-radius:11px;font-size:12.5px;font-weight:700;letter-spacing:.01em;
-  border:1px solid transparent;
-  transition:transform .08s var(--ease),background .15s var(--ease),box-shadow .2s;
-  user-select:none;-webkit-user-select:none;white-space:nowrap}
-.tbtn:active{transform:scale(.96)}
-.tbtn svg{width:15px;height:15px;flex:none;pointer-events:none}
-.tbtn span{pointer-events:none}
-.tbtn.flag{color:var(--gold);border-color:rgba(255,209,102,.28);
-  background:linear-gradient(180deg,rgba(255,209,102,.13),rgba(255,209,102,.04))}
-.tbtn.flag:hover{background:linear-gradient(180deg,rgba(255,209,102,.22),rgba(255,209,102,.08))}
-.tbtn.dec{color:#a5b4fc;border-color:rgba(139,92,246,.32);
-  background:linear-gradient(180deg,rgba(139,92,246,.14),rgba(139,92,246,.04))}
-.tbtn.dec:hover{background:linear-gradient(180deg,rgba(139,92,246,.22),rgba(139,92,246,.08))}
-.tbtn.diag{color:#94a3b8;border-color:rgba(148,163,184,.28);
-  background:linear-gradient(180deg,rgba(148,163,184,.1),rgba(148,163,184,.03))}
-.tbtn.diag:hover{background:linear-gradient(180deg,rgba(148,163,184,.18),rgba(148,163,184,.06))}
+.stage-badge{
+  position:absolute;top:13px;left:14px;z-index:3;
+  padding:4px 10px;border-radius:7px;font-size:11px;letter-spacing:.5px;color:#fff;
+  background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.16);
+  backdrop-filter:blur(6px);
+}
+.stage-overlay{
+  position:absolute;left:0;right:0;bottom:0;z-index:3;
+  padding:22px 16px 13px;
+  background:linear-gradient(transparent,rgba(0,0,0,.8));
+  opacity:.65;transition:.3s;
+}
+.video-stage.playing .stage-overlay{opacity:1;}
+.stage-time{font-size:12px;color:#cbd5e1;font-variant-numeric:tabular-nums;letter-spacing:.4px;}
+.stage-bar{height:4px;border-radius:3px;background:rgba(255,255,255,.2);margin-top:8px;overflow:hidden;}
+.stage-fill{height:100%;width:0;border-radius:3px;transition:width .1s linear;
+  background:linear-gradient(90deg,#ff3b30,#ff8a3d);}
 
-.search{flex:1;min-width:150px;display:flex;align-items:center;gap:7px;
-  background:var(--card);border:1px solid var(--line);border-radius:11px;padding:0 12px;height:38px;
-  transition:border-color .15s,background .15s;backdrop-filter:blur(10px)}
-.search:focus-within{border-color:rgba(91,141,255,.5);background:rgba(91,141,255,.04)}
-.search svg{width:14px;height:14px;color:var(--text-3);flex:none;pointer-events:none}
-.search input{flex:1;background:none;border:none;color:var(--text);font-size:13px;height:100%;min-width:0}
-.search input::placeholder{color:var(--text-3)}
+/* 弹窗内容 */
+.pop-body{padding:18px;}
+.v-title{font-size:16px;font-weight:600;line-height:1.45;margin-bottom:8px;}
+.v-meta{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.v-meta i{font-style:normal;color:#3a4356;}
 
-/* ============ 标记列表 ============ */
-.marks{display:flex;flex-direction:column;gap:6px}
-.mk{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);
-  border-radius:var(--r);padding:9px 12px;cursor:pointer;
-  user-select:none;-webkit-user-select:none;touch-action:manipulation;
-  transition:background .15s var(--ease),border-color .15s,transform .1s var(--ease);
-  animation:fadeUp .22s var(--ease) both}
-.mk:hover{background:var(--card-h);border-color:var(--line-2)}
-.mk:active{transform:scale(.995)}
-@keyframes fadeUp{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
-.mk .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);
-  box-shadow:0 0 7px rgba(255,209,102,.7);flex:none}
-.mk .t{font-size:12.5px;font-weight:800;color:var(--gold);
-  background:rgba(255,209,102,.1);border-radius:7px;padding:2px 9px;
-  font-variant-numeric:tabular-nums;flex:none}
-.mk .title{flex:1;min-width:0;font-size:13.5px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none}
-.mk .del{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;
-  color:var(--text-3);flex:none;padding:0;transition:background .15s,color .15s}
-.mk .del:hover{background:rgba(255,95,95,.12);color:var(--red)}
-.mk .del svg{width:15px;height:15px;pointer-events:none}
-.empty{text-align:center;color:var(--text-3);font-size:12.5px;padding:22px;
-  border:1px dashed var(--line);border-radius:var(--r);line-height:1.6}
+/* 下载按钮 */
+.dl-btn{
+  width:100%;margin-top:16px;padding:16px 20px;border:none;border-radius:13px;
+  background:#1e2532;color:#697286;font-size:15.5px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  cursor:not-allowed;transition:all .3s ease;
+}
+.dl-icon{font-size:17px;line-height:1;}
+.dl-btn.ready{
+  background:linear-gradient(135deg,#ff3b30,#ff5a2e);color:#fff;cursor:pointer;
+  box-shadow:0 10px 28px rgba(255,59,48,.38);
+  animation:redPulse 2s infinite;
+}
+.dl-btn.ready:hover{transform:translateY(-2px);box-shadow:0 15px 36px rgba(255,59,48,.52);}
+.dl-btn.ready:active{transform:translateY(0) scale(.99);}
+@keyframes redPulse{
+  0%{box-shadow:0 10px 28px rgba(255,59,48,.38),0 0 0 0 rgba(255,59,48,.5);}
+  70%{box-shadow:0 10px 28px rgba(255,59,48,.38),0 0 0 15px rgba(255,59,48,0);}
+  100%{box-shadow:0 10px 28px rgba(255,59,48,.38),0 0 0 0 rgba(255,59,48,0);}
+}
 
-/* ============ 下载卡片 ============ */
-.dl{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px;
-  display:flex;flex-direction:column;gap:12px;backdrop-filter:blur(10px);
-  transition:border-color .2s var(--ease)}
-.dl.active{border-color:rgba(91,141,255,.4)}
-.dl-head{display:flex;align-items:center;gap:12px}
-.dl-ic{width:42px;height:42px;border-radius:12px;flex:none;
-  background:linear-gradient(135deg,rgba(91,141,255,.2),rgba(139,92,246,.12));
-  border:1px solid rgba(91,141,255,.22);display:grid;place-items:center;color:#8fb0ff}
-.dl-ic svg{width:19px;height:19px}
-.dl-info{flex:1;min-width:0}
-.dl-title{font-size:14px;font-weight:800}
-.dl-sub{font-size:11.5px;color:var(--text-3);margin-top:2px;line-height:1.4;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dl-go{flex:none;border:none;border-radius:11px;padding:10px 20px;
-  font-size:13px;font-weight:700;color:#fff;
-  background:linear-gradient(180deg,var(--brand),#4a7be6);
-  box-shadow:0 4px 12px rgba(91,141,255,.28),inset 0 1px 0 rgba(255,255,255,.16);
-  transition:transform .08s var(--ease);white-space:nowrap}
-.dl-go:active{transform:scale(.96)}
-.dl-go:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.dl-bar{position:relative;height:6px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden}
-.dl-bar .fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:99px;
-  background:linear-gradient(90deg,var(--brand),var(--brand-2));
-  box-shadow:0 0 10px rgba(91,141,255,.5);
-  transition:width .2s var(--ease)}
-.dl-bar .fill.ind{width:35%!important;animation:ind 1.3s ease-in-out infinite}
-@keyframes ind{0%{left:-35%}100%{left:100%}}
-.dl-stats{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:11.5px;color:var(--text-3);
-  font-variant-numeric:tabular-nums}
-.dl-stats b{color:var(--text);font-weight:700}
-.dl-warn{font-size:11.5px;color:var(--gold);background:rgba(255,209,102,.06);
-  border:1px solid rgba(255,209,102,.18);border-radius:10px;padding:9px 11px;
-  line-height:1.55;display:none}
-.dl-warn.show{display:block}
-.dl-actions{display:flex;gap:8px;justify-content:flex-end}
-.dl-btn{background:none;border:1px solid var(--line);color:var(--text);padding:7px 13px;
-  border-radius:9px;font-size:12px;font-weight:700;transition:background .15s}
-.dl-btn:hover{background:rgba(255,255,255,.04)}
-.dl-btn.danger{border-color:rgba(255,95,95,.28);color:var(--red)}
-.dl-btn.danger:hover{background:rgba(255,95,95,.08)}
+/* ============ 弹层（选画质） ============ */
+.modal-mask{
+  position:fixed;inset:0;z-index:300;padding:20px;
+  background:rgba(5,7,11,.72);backdrop-filter:blur(7px);
+  display:none;place-items:center;
+}
+.modal-mask.show{display:grid;animation:fadeIn .2s;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.modal{
+  width:100%;max-width:440px;background:#12161f;border:1px solid var(--line);
+  border-radius:20px;overflow:hidden;
+  box-shadow:0 44px 90px -24px rgba(0,0,0,.9);
+  animation:modalIn .34s cubic-bezier(.2,.9,.3,1.2);
+}
+@keyframes modalIn{from{opacity:0;transform:translateY(24px) scale(.95);}to{opacity:1;transform:none;}}
+.modal-head{
+  display:flex;align-items:center;gap:10px;padding:18px 20px 14px;
+  font-size:16px;font-weight:700;
+}
+.modal-head .sub{font-size:12px;color:var(--muted);font-weight:400;margin-left:auto;}
+.modal-head button{
+  background:none;border:none;color:#6b7487;font-size:22px;line-height:1;
+  cursor:pointer;padding:0 4px;border-radius:6px;
+}
+.modal-head button:hover{color:#fff;}
+.modal-body{padding:0 20px 6px;max-height:56vh;overflow-y:auto;}
 
-/* ============ 弹出菜单 ============ */
-.menu{position:fixed;z-index:999;min-width:150px;background:rgba(22,27,40,.98);
-  border:1px solid var(--line-2);border-radius:14px;padding:6px;
-  box-shadow:0 16px 48px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.04);
-  backdrop-filter:blur(24px);animation:menu .16s var(--ease) both}
-@keyframes menu{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
-.menu[hidden]{display:none}
-.menu button{display:block;width:100%;text-align:left;padding:9px 12px;border-radius:9px;
-  font-size:13px;color:var(--text);transition:background .12s}
-.menu button:hover{background:rgba(255,255,255,.07)}
-.menu button.danger{color:var(--red)}
-.dec-menu{min-width:250px;max-width:90vw;max-height:70vh;overflow-y:auto;
-  -webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-.dec-head{font-size:10.5px;font-weight:800;color:var(--text-3);padding:8px 12px 6px;
-  letter-spacing:.08em;display:flex;justify-content:space-between;align-items:center;gap:6px}
-.dec-head .badge{font-size:9.5px;color:#a5b4fc;background:rgba(139,92,246,.14);
-  padding:2px 7px;border-radius:6px;letter-spacing:0}
-.dec-item{padding:9px 12px!important;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
-.dec-item .dn{font-size:12.5px;font-weight:700;color:var(--text);display:flex;gap:6px;align-items:center}
-.dec-item .dd{font-size:10.5px;color:var(--text-3)}
-.dec-item.active{background:rgba(91,141,255,.1)}
-.dec-item.active .dn{color:#a5b4fc}
-.dec-item:disabled{opacity:.35;cursor:not-allowed;background:none!important}
-.sep{height:1px;background:var(--line);margin:5px 8px}
+.q-item{
+  width:100%;display:flex;align-items:center;gap:12px;
+  padding:14px 15px;margin-bottom:9px;
+  background:#171c27;border:1.5px solid transparent;border-radius:13px;
+  color:var(--text);font-size:14px;cursor:pointer;transition:.2s;text-align:left;
+}
+.q-item:hover{background:#1c2231;}
+.q-item.selected{border-color:var(--red);background:rgba(255,59,48,.1);}
+.q-radio{
+  width:18px;height:18px;border-radius:50%;border:2px solid #3a4356;
+  display:grid;place-items:center;flex-shrink:0;transition:.2s;
+}
+.q-item.selected .q-radio{border-color:var(--red);}
+.q-item.selected .q-radio::after{
+  content:'';width:9px;height:9px;border-radius:50%;background:var(--red);
+}
+.q-label{font-weight:600;font-size:15px;}
+.q-tag{font-size:11px;padding:2px 7px;border-radius:5px;background:rgba(255,255,255,.08);color:#98a2b3;}
+.q-item.selected .q-tag{background:rgba(255,59,48,.2);color:#ff8078;}
+.q-rec{font-size:10px;padding:2px 6px;border-radius:4px;color:#fff;
+  background:linear-gradient(135deg,#ff3b30,#ff6b35);}
+.q-size{margin-left:auto;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;}
+.modal-foot{padding:8px 20px 20px;}
+.confirm-btn{
+  width:100%;padding:15px;border:none;border-radius:13px;cursor:pointer;
+  font-size:15.5px;font-weight:600;color:#fff;
+  background:linear-gradient(135deg,#ff3b30,#ff5a2e);
+  box-shadow:0 10px 26px rgba(255,59,48,.35);transition:.22s;
+}
+.confirm-btn:hover{transform:translateY(-1px);box-shadow:0 14px 32px rgba(255,59,48,.48);}
 
-/* ============ 诊断面板 ============ */
-.diag{position:fixed;left:12px;right:12px;bottom:12px;max-height:72vh;z-index:1001;
-  background:rgba(15,18,25,.98);border:1px solid var(--line-2);border-radius:var(--r-lg);
-  display:flex;flex-direction:column;overflow:hidden;
-  box-shadow:0 24px 70px rgba(0,0,0,.75);
-  backdrop-filter:blur(24px);animation:menu .2s var(--ease) both}
-.diag[hidden]{display:none}
-.diag-head{display:flex;align-items:center;gap:10px;padding:13px 15px;
-  border-bottom:1px solid var(--line)}
-.diag-head b{font-size:13.5px;font-weight:800;color:var(--text)}
-.diag-head .sub{font-size:11px;color:var(--text-3)}
-.diag-close{margin-left:auto;width:30px;height:30px;border-radius:8px;color:var(--text-3);
-  display:grid;place-items:center;transition:background .15s,color .15s}
-.diag-close:hover{background:rgba(255,255,255,.06);color:var(--text)}
-.diag-close svg{width:16px;height:16px}
-.diag-body{padding:14px 15px;overflow-y:auto;font-size:12px;line-height:1.65;
-  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--text-2)}
-.diag-body h4{margin:14px 0 6px;font-size:11px;color:#a5b4fc;font-weight:800;
-  letter-spacing:.06em;text-transform:uppercase}
-.diag-body h4:first-child{margin-top:0}
-.drow{display:flex;gap:10px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,.06)}
-.drow .k{color:var(--text-3);flex:none;min-width:100px}
-.drow .v{flex:1;min-width:0;word-break:break-all;color:var(--text)}
-.drow .v.ok{color:var(--green)}
-.drow .v.err{color:var(--red)}
-.drow .v.warn{color:var(--gold)}
-.dpre{background:#050608;border:1px solid rgba(255,255,255,.06);border-radius:9px;
-  padding:10px;max-height:170px;overflow:auto;white-space:pre-wrap;word-break:break-all;
-  font-size:11px;color:#8b95ac;margin-top:6px;line-height:1.55}
-.diag-foot{padding:0 15px 15px;display:flex;gap:8px}
-.diag-btn{flex:1;padding:10px;border-radius:10px;border:1px solid var(--line);
-  background:transparent;color:var(--text);font-size:13px;font-weight:700;
-  transition:background .15s}
-.diag-btn:hover{background:rgba(255,255,255,.04)}
-.diag-btn.primary{background:linear-gradient(180deg,var(--brand),#4a7be6);
-  border-color:transparent;color:#fff;box-shadow:0 4px 12px rgba(91,141,255,.28)}
-.diag-btn.primary:hover{filter:brightness(1.05)}
+/* ============ 下载管理 ============ */
+.panel-head{
+  display:flex;align-items:center;gap:12px;margin-bottom:22px;
+}
+.panel-head h2{font-size:22px;margin:0;letter-spacing:-.3px;}
+.panel-head .count{font-size:13px;color:var(--muted);}
+.panel-head .clear{
+  margin-left:auto;background:rgba(255,255,255,.05);border:1px solid var(--line);
+  color:#98a2b3;font-size:13px;padding:8px 14px;border-radius:9px;cursor:pointer;transition:.2s;
+}
+.panel-head .clear:hover{color:#ff7a70;border-color:rgba(255,59,48,.4);}
+
+.task{
+  background:#141924;border:1px solid var(--line);border-radius:16px;
+  padding:16px;margin-bottom:14px;animation:taskIn .38s cubic-bezier(.2,.9,.3,1.1);
+  transition:border-color .3s;
+}
+@keyframes taskIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+.task.done{border-color:rgba(34,197,94,.28);}
+.task-top{display:flex;align-items:center;gap:13px;}
+.task-thumb{
+  width:58px;height:40px;border-radius:9px;flex-shrink:0;
+  background:linear-gradient(135deg,#2b3550,#141a28);
+  display:grid;place-items:center;color:#4d5a75;font-size:13px;
+}
+.task.done .task-thumb{color:#22c55e;background:linear-gradient(135deg,#12351f,#0f2a19);}
+.task-info{min-width:0;flex:1;}
+.task-name{
+  font-size:14.5px;font-weight:600;margin-bottom:5px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.task-sub{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;}
+.q-chip{
+  padding:2px 7px;border-radius:5px;font-size:11px;
+  background:rgba(255,59,48,.15);color:#ff8078;font-weight:600;
+}
+.task-status{margin-left:auto;font-size:12.5px;font-weight:700;color:#ff6b5e;white-space:nowrap;}
+.task.done .task-status{color:var(--green);}
+
+.bar{height:6px;border-radius:4px;background:rgba(255,255,255,.07);margin:14px 0 9px;overflow:hidden;}
+.bar-fill{
+  height:100%;width:0;border-radius:4px;transition:width .1s linear;
+  background:linear-gradient(90deg,#ff3b30,#ff8a3d);
+}
+.task.done .bar-fill{background:linear-gradient(90deg,#16a34a,#4ade80);}
+
+.task-foot{
+  display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);
+  font-variant-numeric:tabular-nums;
+}
+.task.done .task-foot .speed{color:var(--green);}
+
+.export-btn{
+  width:100%;margin-top:14px;padding:12px;border:none;border-radius:11px;
+  background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;
+  font-size:14.5px;font-weight:600;cursor:pointer;transition:.22s;
+  animation:taskIn .3s ease;
+}
+.export-btn:hover{filter:brightness(1.12);transform:translateY(-1px);}
+.export-btn:active{transform:translateY(0);}
+
+.empty{
+  text-align:center;padding:70px 20px;color:#4e5769;font-size:14px;
+}
+.empty .big{font-size:40px;margin-bottom:14px;opacity:.5;}
+
+/* ============ 关于网站 ============ */
+.about-hero{text-align:center;margin-bottom:34px;}
+.about-hero h2{font-size:26px;margin:0 0 12px;letter-spacing:-.4px;}
+.about-hero p{color:var(--muted);font-size:14.5px;line-height:1.85;max-width:620px;margin:0 auto;}
+.sec-title{font-size:16px;margin:38px 0 16px;display:flex;align-items:center;gap:9px;}
+.sec-title::before{content:'';width:4px;height:16px;border-radius:2px;
+  background:linear-gradient(180deg,#ff3b30,#ff8a3d);}
+
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;}
+.feature{
+  background:#141924;border:1px solid var(--line);border-radius:14px;padding:18px;
+  transition:.25s;
+}
+.feature:hover{border-color:rgba(255,59,48,.35);transform:translateY(-3px);}
+.feature .ic{
+  width:36px;height:36px;border-radius:10px;display:grid;place-items:center;
+  background:rgba(255,59,48,.13);font-size:17px;margin-bottom:12px;
+}
+.feature h4{margin:0 0 7px;font-size:14.5px;}
+.feature p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.7;}
+
+.faq details{
+  background:#141924;border:1px solid var(--line);border-radius:13px;
+  margin-bottom:10px;overflow:hidden;transition:.25s;
+}
+.faq details[open]{border-color:rgba(255,59,48,.3);}
+.faq summary{
+  padding:16px 18px;cursor:pointer;font-size:14.5px;font-weight:600;
+  list-style:none;display:flex;align-items:center;gap:10px;user-select:none;
+}
+.faq summary::-webkit-details-marker{display:none;}
+.faq summary::after{
+  content:'+';margin-left:auto;color:#6b7487;font-size:19px;font-weight:400;
+  transition:.25s;line-height:1;
+}
+.faq details[open] summary::after{transform:rotate(45deg);color:#ff7a70;}
+.faq .ans{
+  padding:0 18px 17px;font-size:13.5px;color:#98a2b3;line-height:1.9;
+}
+.faq .ans b{color:#ff8078;font-weight:600;}
 
 /* ============ Toast ============ */
-.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,14px);
-  background:rgba(22,27,40,.98);border:1px solid var(--line-2);color:var(--text);
-  padding:10px 20px;border-radius:99px;font-size:13px;font-weight:500;
-  opacity:0;pointer-events:none;z-index:1002;max-width:82vw;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  box-shadow:0 12px 36px rgba(0,0,0,.55);backdrop-filter:blur(20px);
-  transition:opacity .22s var(--ease),transform .22s var(--ease)}
-.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast{
+  position:fixed;left:50%;bottom:40px;z-index:600;
+  transform:translate(-50%,24px);opacity:0;pointer-events:none;
+  background:#1c2230;border:1px solid var(--line);color:#fff;
+  padding:13px 22px;border-radius:12px;font-size:14px;
+  box-shadow:0 18px 44px rgba(0,0,0,.65);transition:.32s cubic-bezier(.2,.9,.3,1.2);
+  display:flex;align-items:center;gap:9px;
+}
+.toast.show{opacity:1;transform:translate(-50%,0);}
 
-/* 响应式 */
-@media (max-width:520px){
-  .app{padding:10px 10px calc(20px + env(safe-area-inset-bottom));gap:10px}
-  .brand{font-size:15px}
-  .tbtn{padding:8px 11px;font-size:12px}
-  .play-btn{padding:0 18px;font-size:13.5px}
+@media (max-width:640px){
+  .topbar{padding:12px 16px;}
+  .logo span:last-child{display:none;}
+  main{padding:30px 16px 80px;}
+  .input-row{flex-direction:column;align-items:stretch;}
+  #parseBtn{width:100%;}
+  .pop-body{padding:15px;}
 }
 </style>
 </head>
 <body>
 
-<div class="app">
-
-  <!-- 顶栏 -->
-  <div class="topbar">
-    <div class="logo">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
-           stroke-linecap="round" stroke-linejoin="round">
-        <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/>
-      </svg>
-    </div>
-    <div class="brand">VodCore<em>GEN 2</em></div>
-    <div class="shield" id="shield"><i></i><span>反盗链已开启</span></div>
+<!-- ================= 顶栏 ================= -->
+<header class="topbar">
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <span>闪电视频下载器</span>
   </div>
+  <nav class="tabs">
+    <button class="tab active" data-view="home">下载</button>
+    <button class="tab" data-view="manager">下载管理 <span class="badge" id="taskBadge">0</span></button>
+    <button class="tab" data-view="about">关于网站</button>
+  </nav>
+</header>
 
-  <!-- URL -->
-  <div class="url-bar">
-    <div class="field">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-           stroke-linecap="round" stroke-linejoin="round">
-        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-      </svg>
-      <input id="urlInput" type="url" inputmode="url" autocomplete="off" spellcheck="false"
-             placeholder="粘贴 M3U8 / 加密 M3U8 / 视频直链…">
-      <button class="paste" id="pasteBtn" title="从剪贴板粘贴">粘贴</button>
+<main>
+
+  <!-- ================= 首页 ================= -->
+  <section class="view active" id="view-home">
+    <div class="hero">
+      <div class="pill"><i></i> 多线程极速引擎已就绪</div>
+      <h1>粘贴链接，<span class="grad">秒速下载</span>视频</h1>
+      <p class="sub">支持 1000+ 主流站点 · 最高 1080P 全高清 · 无需登录注册</p>
     </div>
-    <button class="play-btn" id="loadBtn">播放</button>
+
+    <div class="input-row" id="inputRow">
+      <input id="urlInput" type="text" placeholder="粘贴视频链接，例如 https://www.example.com/video/12345" autocomplete="off">
+      <button id="parseBtn">解析</button>
+    </div>
+
+    <div class="hint-row">
+      <span class="hint-chip" data-url="https://www.example.com/watch?v=demo1080p">试试示例链接 1</span>
+      <span class="hint-chip" data-url="https://v.example.cn/video/city-night-4k">试试示例链接 2</span>
+    </div>
+
+    <!-- 弹出小窗口 -->
+    <div class="popover" id="popover">
+      <div class="pop-head">
+        <span class="live-dot"></span>
+        <span>已检测到 <b>1</b> 个视频资源</span>
+        <button class="pop-close" id="popClose" title="关闭">×</button>
+      </div>
+
+      <div class="video-stage" id="videoStage">
+        <div class="stage-glow"></div>
+        <span class="stage-badge">HD 1080P</span>
+        <button class="play-btn" id="playBtn" aria-label="播放视频">
+          <svg viewBox="0 0 24 24" width="30" height="30"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+        </button>
+        <div class="stage-overlay">
+          <div class="stage-time" id="stageTime">00:00 / 12:36</div>
+          <div class="stage-bar"><div class="stage-fill" id="stageFill"></div></div>
+        </div>
+      </div>
+
+      <div class="pop-body">
+        <div class="v-title" id="vTitle">视频标题加载中…</div>
+        <div class="v-meta">
+          <span id="vSource">来源</span>
+          <i>·</i>
+          <span id="vDur">时长 12:36</span>
+          <i>·</i>
+          <span>可下载画质 4 种</span>
+        </div>
+        <button class="dl-btn" id="dlBtn" disabled>
+          <span class="dl-icon">⬇</span>
+          <span id="dlText">点击视频并播放以检测源…</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 下载管理 ================= -->
+  <section class="view" id="view-manager">
+    <div class="panel-head">
+      <h2>下载管理</h2>
+      <span class="count" id="taskCount">0 个任务</span>
+      <button class="clear" id="clearDone">清除已完成</button>
+    </div>
+    <div class="task-list" id="taskList">
+      <div class="empty">
+        <div class="big">📥</div>
+        暂无下载任务<br>去首页粘贴链接开始下载吧
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 关于网站 ================= -->
+  <section class="view" id="view-about">
+    <div class="about-hero">
+      <h2>关于本站</h2>
+      <p>
+        闪电视频下载器是一个专注于「快」的视频下载工具。无需安装任何客户端，粘贴链接即可解析，
+        选择画质后由多线程加速引擎接管下载。我们只做一件事：把视频用最快的速度交到你手里。
+      </p>
+    </div>
+
+    <div class="feature-grid">
+      <div class="feature">
+        <div class="ic">⚡</div>
+        <h4>极速引擎</h4>
+        <p>多线程分片并发，实测峰值可达 50MB/s 以上。</p>
+      </div>
+      <div class="feature">
+        <div class="ic">🎬</div>
+        <h4>最高 1080P</h4>
+        <p>自动抓取全部可用画质，默认推荐最高清晰度。</p>
+      </div>
+      <div class="feature">
+        <div class="ic">📦</div>
+        <h4>批量管理</h4>
+        <p>统一进度面板，实时速度、剩余时间一目了然。</p>
+      </div>
+      <div class="feature">
+        <div class="ic">🔒</div>
+        <h4>隐私安全</h4>
+        <p>不记录链接、不存储视频，全部处理在本地完成。</p>
+      </div>
+    </div>
+
+    <h3 class="sec-title">常见问题</h3>
+    <div class="faq">
+      <details open>
+        <summary>最高支持选择多少分辨率？</summary>
+        <div class="ans">
+          目前最高支持 <b>1080P 全高清（超清）</b>，同时提供 720P 高清、480P 标清、360P 流畅共 4 档画质。
+          系统会自动列出视频源中所有可用的清晰度，并在解析时默认勾选最高画质 1080P。
+        </div>
+      </details>
+
+      <details>
+        <summary>高速下载速度有多快？</summary>
+        <div class="ans">
+          采用 <b>多线程分片并发下载</b> 技术，把文件切成多个分片同时拉取，实测峰值可达 <b>50MB/s 以上</b>。
+          一个 120MB 的 1080P 视频，通常 <b>2～4 秒</b> 即可完成，无需排队等待。
+        </div>
+      </details>
+
+      <details>
+        <summary>为什么需要先点击视频并播放？</summary>
+        <div class="ans">
+          部分站点的视频源是懒加载的，只有播放器真正开始播放时才会暴露真实地址。
+          点击播放可以 <b>触发浏览器捕获视频流</b>，从而拿到完整的画质清单，确保下载到的文件完整可用。
+        </div>
+      </details>
+
+      <details>
+        <summary>下载完成后视频保存在哪里？</summary>
+        <div class="ans">
+          任务完成后点击 <b>「导出到本地」</b> 按钮，浏览器会直接把文件保存到你的
+          默认下载目录（通常是「下载 / Downloads」文件夹），文件名格式为
+          「视频标题_画质.mp4」。
+        </div>
+      </details>
+
+      <details>
+        <summary>支持哪些网站？需要登录吗？</summary>
+        <div class="ans">
+          支持国内外 <b>1000+ 主流视频平台</b> 及大部分公开视频页面。
+          完全免费，<b>无需注册、无需登录</b>，也不会向你的账号索取任何权限。
+        </div>
+      </details>
+
+      <details>
+        <summary>手机端可以使用吗？</summary>
+        <div class="ans">
+          可以。本站自适应手机、平板与电脑屏幕。手机端导出时，文件会保存到系统的
+          「文件 / 下载」目录中。
+        </div>
+      </details>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= 画质选择弹层 ================= -->
+<div class="modal-mask" id="qualityModal">
+  <div class="modal">
+    <div class="modal-head">
+      选择下载画质
+      <span class="sub" id="qualitySizeHint"></span>
+      <button id="modalClose" title="关闭">×</button>
+    </div>
+    <div class="modal-body" id="qualityList"></div>
+    <div class="modal-foot">
+      <button class="confirm-btn" id="confirmDownload">开始高速下载</button>
+    </div>
   </div>
-
-  <!-- 播放器 -->
-  <div class="player" id="player">
-    <video id="video" playsinline webkit-playsinline x5-playsinline preload="metadata"
-           referrerpolicy="no-referrer"></video>
-    <div class="pbadge" id="pbadge"><i id="pbadgeDot"></i><span id="pbadgeText">VodCore</span></div>
-    <div class="bigplay" id="bigplay">
-      <svg viewBox="0 0 24 24" width="60" height="60" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-    </div>
-    <div class="loader" id="loader"></div>
-    <div class="ctrl" id="ctrl">
-      <div class="pbar" id="pbar">
-        <div class="track"><div class="buf" id="bufBar"></div></div>
-        <div class="played" id="playedBar"></div>
-        <div class="marks" id="marksLayer"></div>
-        <div class="thumb" id="thumb"></div>
-      </div>
-      <div class="ctrl-row">
-        <button class="cbtn" id="playBtn"></button>
-        <span class="time" id="timeText">00:00 / 00:00</span>
-        <div class="spacer"></div>
-        <select class="rate" id="rateSelect"></select>
-        <button class="cbtn" id="pipBtn" title="画中画"></button>
-        <button class="cbtn" id="fsBtn" title="全屏 / 横屏"></button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 工具栏 -->
-  <div class="toolbar">
-    <button class="tbtn flag" id="flagBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-           stroke-linecap="round" stroke-linejoin="round">
-        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
-        <line x1="4" y1="22" x2="4" y2="15"/>
-      </svg><span>标记</span>
-    </button>
-    <button class="tbtn dec" id="decBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-           stroke-linecap="round" stroke-linejoin="round">
-        <rect x="4" y="4" width="16" height="16" rx="2"/>
-        <rect x="9" y="9" width="6" height="6" rx="1"/>
-      </svg><span>解码</span>
-    </button>
-    <button class="tbtn diag" id="diagBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-           stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/><path d="M11 8v3M11 14h.01"/>
-      </svg><span>诊断</span>
-    </button>
-    <div class="search">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/>
-      </svg>
-      <input id="searchInput" type="search" placeholder="搜索标记…" autocomplete="off">
-    </div>
-  </div>
-
-  <!-- 标记列表 -->
-  <div class="marks" id="marksList"></div>
-  <div class="empty" id="emptyTip">还没有标记 · 点击上方 🏳 旗子标记当前时间</div>
-
-  <!-- 下载 -->
-  <div class="dl" id="dlCard">
-    <div class="dl-head">
-      <div class="dl-ic">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-             stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <path d="M7 10l5 5 5-5"/><path d="M12 15V3"/>
-        </svg>
-      </div>
-      <div class="dl-info">
-        <div class="dl-title">📥 高速下载</div>
-        <div class="dl-sub" id="dlSub">M3U8 · AES-128/192/256 · fMP4 · 直链</div>
-      </div>
-      <button class="dl-go" id="dlGo">开始下载</button>
-    </div>
-    <div class="dl-warn" id="dlWarn"></div>
-    <div id="dlProg" hidden style="display:flex;flex-direction:column;gap:10px">
-      <div class="dl-bar"><div class="fill" id="dlFill"></div></div>
-      <div class="dl-stats">
-        <span>进度 <b id="dlPct">0%</b></span>
-        <span>速度 <b id="dlSpd">--</b></span>
-        <span>剩余 <b id="dlRem">--</b></span>
-        <span>大小 <b id="dlSize">--</b></span>
-      </div>
-      <div class="dl-actions">
-        <button class="dl-btn danger" id="dlCancel">取消下载</button>
-      </div>
-    </div>
-  </div>
-
 </div>
 
-<!-- 标记菜单 -->
-<div class="menu" id="markMenu" hidden>
-  <button data-act="seek">⏱ 跳转到此处</button>
-  <button data-act="rename">✏️ 重命名</button>
-  <button data-act="delete" class="danger">🗑 删除</button>
-</div>
-
-<!-- 解码菜单 -->
-<div class="menu dec-menu" id="decMenu" hidden></div>
-
-<!-- 诊断面板 -->
-<div class="diag" id="diagPanel" hidden>
-  <div class="diag-head">
-    <div>
-      <b>🔍 链接诊断</b>
-      <div class="sub" id="diagSub">查看服务器实际返回的内容</div>
-    </div>
-    <button class="diag-close" id="diagClose">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-           stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-    </button>
-  </div>
-  <div class="diag-body" id="diagBody"></div>
-  <div class="diag-foot">
-    <button class="diag-btn" id="diagCopy">复制报告</button>
-    <button class="diag-btn primary" id="diagRun">重新诊断</button>
-  </div>
-</div>
-
+<!-- ================= Toast ================= -->
 <div class="toast" id="toast"></div>
 
 <script>
-/* ================================================================
- *  VodCore GEN 2
- *  - 反防盗链引擎（no-referrer / omit-credentials / 内容校验）
- *  - HLS.js 自定义 loader + fetchSetup
- *  - 强化解密（AES-128/192/256 CBC + AES-CTR）
- *  - 稳定事件处理（window 级 pointer 监听）
- * ================================================================ */
-(function () {
-'use strict';
+/* ==================== 基础工具 ==================== */
+const $  = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
 
-/* ================= 快捷引用 ================= */
-const $ = (id) => document.getElementById(id);
-const video = $('video'), player = $('player');
-const urlInput = $('urlInput'), pasteBtn = $('pasteBtn'), loadBtn = $('loadBtn');
-const pbadge = $('pbadge'), pbadgeDot = $('pbadgeDot'), pbadgeText = $('pbadgeText');
-const bigplay = $('bigplay'), loader = $('loader'), ctrl = $('ctrl');
-const pbar = $('pbar'), bufBar = $('bufBar'), playedBar = $('playedBar');
-const marksLayer = $('marksLayer'), thumb = $('thumb');
-const playBtn = $('playBtn'), timeText = $('timeText'), rateSelect = $('rateSelect');
-const pipBtn = $('pipBtn'), fsBtn = $('fsBtn');
-const flagBtn = $('flagBtn'), decBtn = $('decBtn'), diagBtn = $('diagBtn');
-const searchInput = $('searchInput'), marksList = $('marksList'), emptyTip = $('emptyTip');
-const markMenu = $('markMenu'), decMenu = $('decMenu');
-const shield = $('shield');
-const diagPanel = $('diagPanel'), diagBody = $('diagBody'), diagSub = $('diagSub');
-const diagClose = $('diagClose'), diagCopy = $('diagCopy'), diagRun = $('diagRun');
-const dlCard = $('dlCard'), dlSub = $('dlSub'), dlWarn = $('dlWarn'), dlGo = $('dlGo');
-const dlProg = $('dlProg'), dlFill = $('dlFill'), dlPct = $('dlPct');
-const dlSpd = $('dlSpd'), dlRem = $('dlRem'), dlSize = $('dlSize'), dlCancel = $('dlCancel');
-const toastEl = $('toast');
-
-/* ================= 图标 ================= */
-const I = {
-  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
-  pause:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>',
-  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
-  pip:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><rect x="12" y="12" width="8" height="6" rx="1" fill="currentColor" stroke="none"/></svg>',
-  fs:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>',
-  fsOut:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>'
-};
-playBtn.innerHTML = I.play;
-bigplay.innerHTML = I.play;
-pipBtn.innerHTML = I.pip;
-fsBtn.innerHTML = I.fs;
-
-/* ================= 工具 ================= */
-const pad = (n) => String(n).padStart(2, '0');
-function fmtTime(s) {
-  if (!isFinite(s) || s < 0) s = 0;
-  s = Math.floor(s);
-  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
-  return h ? `${h}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`;
-}
-function fmtBytes(n) {
-  if (!isFinite(n) || n <= 0) return '--';
-  if (n < 1024) return n + ' B';
-  if (n < 1048576) return (n/1024).toFixed(1) + ' KB';
-  if (n < 1073741824) return (n/1048576).toFixed(1) + ' MB';
-  return (n/1073741824).toFixed(2) + ' GB';
-}
-const fmtSpeed = (b) => (!isFinite(b) || b <= 0) ? '--' : fmtBytes(b) + '/s';
-function fmtRemain(s) {
-  if (!isFinite(s) || s <= 0) return '--';
-  if (s < 60) return Math.ceil(s) + 's';
-  if (s < 3600) return Math.floor(s/60) + 'm ' + Math.floor(s%60) + 's';
-  return Math.floor(s/3600) + 'h ' + Math.floor((s%3600)/60) + 'm';
-}
-const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-
-let toastT;
-function toast(msg) {
-  toastEl.textContent = msg;
-  toastEl.classList.add('show');
-  clearTimeout(toastT);
-  toastT = setTimeout(() => toastEl.classList.remove('show'), 2200);
+function toast(msg){
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2400);
 }
 
-/* ================= 环境探测 ================= */
-const ENV = (() => {
-  const ua = navigator.userAgent;
-  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  const isAndroid = /Android/i.test(ua);
-  const isSafari = /Safari/i.test(ua) && !/Chrome|CriOS|Chromium|Edg|OPR|FxiOS/i.test(ua);
-  const isMobile = isIOS || isAndroid || /Mobile|Tablet/i.test(ua);
-  const cores = navigator.hardwareConcurrency || 4;
-  const memory = navigator.deviceMemory || 4;
-  const nativeHlsOk = /maybe|probably/.test(video.canPlayType('application/vnd.apple.mpegurl'));
-  const hlsJsOk = !!(window.Hls && window.Hls.isSupported && window.Hls.isSupported());
-  const webCryptoOk = !!(window.crypto && window.crypto.subtle);
-  return { isIOS, isAndroid, isSafari, isMobile, cores, memory,
-    lowEnd: cores <= 2 || memory <= 2,
-    nativeHlsOk, hlsJsOk, webCryptoOk };
-})();
-
-/* ================= 状态 ================= */
-let currentUrl = '';
-let hasSource = false;
-let hls = null;
-let retries = 0;
-let marks = [];
-let wasPlaying = false;
-let badgeTimer, loaderTimer, loaderShown = false, ctrlTimer;
-let dragging = false, dragPct = 0;
-
-/* 标记存储 */
-const STORE_KEY = 'vodcore_marks_gen2';
-let store = {};
-try { store = JSON.parse(localStorage.getItem(STORE_KEY) || '{}') || {}; } catch (e) { store = {}; }
-
-function saveMarks() {
-  if (!currentUrl) return;
-  if (marks.length) store[currentUrl] = marks;
-  else delete store[currentUrl];
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) {}
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, m => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[m]));
 }
 
-/* ================= 反防盗链引擎 ================= */
-const AntiHotlink = {
-  // 所有网络请求的统一入口：强制 no-referrer + omit credentials
-  request(url, opts = {}) {
-    return fetch(url, {
-      method: opts.method || 'GET',
-      credentials: 'omit',
-      mode: 'cors',
-      cache: 'no-store',
-      redirect: 'follow',
-      referrerPolicy: 'no-referrer',
-      signal: opts.signal,
-      headers: opts.headers || {}
-    });
-  },
-
-  // 探测内容类型，判断是否被替换
-  async probe(url) {
-    // 直链视频跳过
-    if (/\.(mp4|webm|ogg|ogv|mov|m4v|flv|mkv|avi|wmv|3gp)(\?|#|$)/i.test(url)) {
-      return { type: 'direct' };
-    }
-    try {
-      const ctl = new AbortController();
-      const t = setTimeout(() => ctl.abort(), 6000);
-      const res = await this.request(url, { signal: ctl.signal });
-      clearTimeout(t);
-
-      if (!res.ok) {
-        return { type: 'http', status: res.status, message: 'HTTP ' + res.status };
-      }
-
-      const text = await res.text();
-      const head = text.trim().slice(0, 200).toLowerCase();
-
-      // 是 M3U8
-      if (/^#EXTM3U/m.test(text.slice(0, 200))) {
-        const encMatch = text.match(/#EXT-X-KEY:METHOD=([A-Z0-9-]+)/i);
-        return {
-          type: 'm3u8',
-          encrypted: encMatch ? encMatch[1] : null,
-          text,
-          redirected: res.redirected,
-          finalUrl: res.url,
-          length: text.length
-        };
-      }
-
-      // 是 HTML（可能被替换）
-      if (head.startsWith('<!doctype') || head.startsWith('<html') || head.includes('<head>')) {
-        return {
-          type: 'html',
-          message: '服务器返回 HTML 页面，不是 M3U8',
-          preview: text.slice(0, 400),
-          redirected: res.redirected,
-          finalUrl: res.url
-        };
-      }
-
-      // 是 JSON
-      if (head.startsWith('{') || head.startsWith('[')) {
-        return {
-          type: 'json',
-          message: '服务器返回 JSON，可能是 API 接口',
-          preview: text.slice(0, 400),
-          redirected: res.redirected,
-          finalUrl: res.url
-        };
-      }
-
-      // 二进制或未知
-      return {
-        type: 'unknown',
-        message: '返回内容不是 M3U8',
-        preview: text.slice(0, 200),
-        redirected: res.redirected,
-        finalUrl: res.url
-      };
-    } catch (e) {
-      return { type: 'network', message: e.message || '网络请求失败' };
-    }
-  }
-};
-
-/* ================= UI 辅助 ================= */
-function setBadge(text, mode) {
-  pbadgeText.textContent = text;
-  pbadgeDot.className = '';
-  if (mode === 'warn') pbadgeDot.classList.add('warn');
-  else if (mode === 'err') pbadgeDot.classList.add('err');
-  pbadge.classList.add('show');
-  clearTimeout(badgeTimer);
-  badgeTimer = setTimeout(() => pbadge.classList.remove('show'), 4500);
-}
-function showLoaderNow() {
-  clearTimeout(loaderTimer);
-  loaderShown = true;
-  loader.classList.add('show');
-}
-function hideLoader() {
-  clearTimeout(loaderTimer);
-  loaderShown = false;
-  loader.classList.remove('show');
-}
-function scheduleLoader(delay) {
-  if (loaderShown) return;
-  clearTimeout(loaderTimer);
-  loaderTimer = setTimeout(() => {
-    if (video.readyState < 3 && !video.paused && hasSource) {
-      loaderShown = true;
-      loader.classList.add('show');
-    }
-  }, delay || 500);
-}
-function showCtrl() {
-  ctrl.classList.remove('hide');
-  clearTimeout(ctrlTimer);
-  if (!video.paused && !dragging) {
-    ctrlTimer = setTimeout(() => {
-      if (!dragging) ctrl.classList.add('hide');
-    }, 3200);
-  }
-}
-function syncPlayIcon() {
-  playBtn.innerHTML = video.paused ? I.play : I.pause;
-  bigplay.classList.toggle('show', video.paused && hasSource && video.readyState > 0);
+function fmtTime(sec){
+  sec = Math.floor(sec);
+  const m = String(Math.floor(sec / 60)).padStart(2,'0');
+  const s = String(sec % 60).padStart(2,'0');
+  return `${m}:${s}`;
 }
 
-/* ================= 播放控制 ================= */
-function togglePlay() {
-  if (!hasSource) { toast('请先输入链接'); return; }
-  if (video.paused) video.play().catch(() => {});
-  else video.pause();
+/* ==================== 视图切换 ==================== */
+function switchView(name){
+  $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
+  $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.view === name));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-playBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
-video.addEventListener('click', togglePlay);
-
-video.addEventListener('play', () => { syncPlayIcon(); showCtrl(); });
-video.addEventListener('pause', () => { syncPlayIcon(); showCtrl(); });
-video.addEventListener('waiting', () => scheduleLoader(500));
-video.addEventListener('stalled', () => scheduleLoader(700));
-video.addEventListener('playing', hideLoader);
-video.addEventListener('canplay', hideLoader);
-video.addEventListener('canplaythrough', hideLoader);
-video.addEventListener('seeked', hideLoader);
-video.addEventListener('loadeddata', hideLoader);
-video.addEventListener('loadedmetadata', () => {
-  hideLoader();
-  renderMarksLayer();
-  updateTime();
-  updateFsIcon();
-});
-video.addEventListener('durationchange', renderMarksLayer);
-
-/* ================= 控制栏显隐 ================= */
-player.addEventListener('pointermove', showCtrl);
-player.addEventListener('pointerdown', showCtrl);
-player.addEventListener('pointerleave', () => {
-  if (!video.paused && !dragging) {
-    clearTimeout(ctrlTimer);
-    ctrlTimer = setTimeout(() => ctrl.classList.add('hide'), 800);
-  }
+$$('.tab').forEach(tab => {
+  tab.addEventListener('click', () => switchView(tab.dataset.view));
 });
 
-/* ================= 进度条（稳定版） ================= */
-function getPct(e) {
-  const r = pbar.getBoundingClientRect();
-  if (!r.width) return 0;
-  const x = (e.clientX != null ? e.clientX : 0) - r.left;
-  return Math.max(0, Math.min(1, x / r.width));
-}
-function renderPct(p) {
-  playedBar.style.width = (p * 100) + '%';
-  thumb.style.left = (p * 100) + '%';
-  if (isFinite(video.duration) && video.duration > 0) {
-    timeText.textContent = fmtTime(p * video.duration) + ' / ' + fmtTime(video.duration);
-  }
-}
-pbar.addEventListener('pointerdown', (e) => {
-  if (e.button > 0 || !hasSource) return;
-  dragging = true;
-  dragPct = getPct(e);
-  pbar.classList.add('dragging');
-  renderPct(dragPct);
-  showCtrl();
-  clearTimeout(ctrlTimer);
-  e.preventDefault();
-});
-window.addEventListener('pointermove', (e) => {
-  if (!dragging) return;
-  dragPct = getPct(e);
-  renderPct(dragPct);
-  e.preventDefault();
-}, { passive: false });
-window.addEventListener('pointerup', () => {
-  if (!dragging) return;
-  dragging = false;
-  pbar.classList.remove('dragging');
-  const d = video.duration;
-  if (isFinite(d) && d > 0 && hasSource) {
-    try { video.currentTime = Math.min(d - 0.05, Math.max(0, dragPct * d)); } catch (e) {}
-    scheduleLoader(280);
-  }
-  showCtrl();
-});
-window.addEventListener('pointercancel', () => {
-  if (!dragging) return;
-  dragging = false;
-  pbar.classList.remove('dragging');
+/* ==================== 数据 ==================== */
+const QUALITIES = [
+  { id:'1080', label:'1080P', tag:'超清', size:126.4, rec:true  },
+  { id:'720',  label:'720P',  tag:'高清', size:68.2,  rec:false },
+  { id:'480',  label:'480P',  tag:'标清', size:34.5,  rec:false },
+  { id:'360',  label:'360P',  tag:'流畅', size:18.7,  rec:false }
+];
+
+const DEMO_TITLES = [
+  '城市夜景延时摄影 · 4K 素材片段',
+  '海边日落航拍 · 治愈系短片',
+  '产品宣传片 Demo 剪辑版',
+  '前端开发实战教程 · 第 3 章',
+  '猫咪日常合集 · 第 12 期'
+];
+
+let currentVideo = null;   // 当前解析出的视频信息
+let playTimer    = null;   // 模拟播放计时器
+let tasks        = [];     // 下载任务列表
+let selectedQuality = '1080';
+
+/* ==================== 解析流程 ==================== */
+const urlInput = $('#urlInput');
+const parseBtn = $('#parseBtn');
+const popover  = $('#popover');
+const videoStage = $('#videoStage');
+const playBtn  = $('#playBtn');
+const dlBtn    = $('#dlBtn');
+const dlText   = $('#dlText');
+const stageFill = $('#stageFill');
+const stageTime = $('#stageTime');
+
+$$('.hint-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    urlInput.value = chip.dataset.url;
+    urlInput.focus();
+  });
 });
 
-function updateTime() {
-  if (isFinite(video.duration) && video.duration > 0) {
-    timeText.textContent = fmtTime(video.currentTime) + ' / ' + fmtTime(video.duration);
-  } else {
-    timeText.textContent = fmtTime(video.currentTime) + ' / --:--';
-  }
-}
-
-// 主循环
-function loop() {
-  if (!dragging) {
-    const d = video.duration;
-    if (isFinite(d) && d > 0) {
-      const p = video.currentTime / d;
-      playedBar.style.width = (p * 100) + '%';
-      thumb.style.left = (p * 100) + '%';
-    }
-    updateTime();
-    let bufEnd = 0;
-    try {
-      for (let i = 0; i < video.buffered.length; i++) {
-        if (video.buffered.start(i) <= video.currentTime &&
-            video.currentTime <= video.buffered.end(i)) {
-          bufEnd = video.buffered.end(i);
-          break;
-        }
-      }
-    } catch (e) {}
-    if (isFinite(d) && d > 0) bufBar.style.width = (bufEnd / d * 100) + '%';
-  }
-  requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
-
-/* ================= 倍速 ================= */
-[0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 7, 8, 10, 12, 15, 18].forEach((s) => {
-  const o = document.createElement('option');
-  o.value = String(s); o.textContent = s + 'x';
-  if (s === 1) o.selected = true;
-  rateSelect.appendChild(o);
+urlInput.addEventListener('keydown', e => {
+  if(e.key === 'Enter') parseBtn.click();
 });
-rateSelect.addEventListener('change', () => {
-  const r = parseFloat(rateSelect.value);
-  video.playbackRate = r;
+
+parseBtn.addEventListener('click', () => {
+  const url = urlInput.value.trim();
+  if(!url){
+    $('#inputRow').classList.add('shake');
+    setTimeout(() => $('#inputRow').classList.remove('shake'), 420);
+    toast('请先粘贴视频链接');
+    return;
+  }
+
+  parseBtn.disabled = true;
+  parseBtn.textContent = '解析中…';
+
   setTimeout(() => {
-    if (Math.abs(video.playbackRate - r) > 0.01) {
-      toast('浏览器限制，实际 ' + video.playbackRate + 'x');
-      rateSelect.value = String(video.playbackRate);
-    }
-  }, 60);
-});
-video.addEventListener('ratechange', () => {
-  const v = video.playbackRate;
-  for (let i = 0; i < rateSelect.options.length; i++) {
-    if (Math.abs(parseFloat(rateSelect.options[i].value) - v) < 0.001) {
-      rateSelect.value = String(v);
-      return;
-    }
-  }
+    parseBtn.disabled = false;
+    parseBtn.textContent = '解析';
+    showPopover(url);
+  }, 850);
 });
 
-/* ================= 画中画 ================= */
-if (!document.pictureInPictureEnabled && !video.webkitSetPresentationMode) {
-  pipBtn.style.display = 'none';
-}
-pipBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  if (document.pictureInPictureEnabled) {
-    if (document.pictureInPictureElement) document.exitPictureInPicture().catch(() => {});
-    else video.requestPictureInPicture().catch(() => toast('无法开启画中画'));
-    return;
-  }
-  if (video.webkitSetPresentationMode) {
-    try {
-      video.webkitSetPresentationMode(
-        video.webkitPresentationMode === 'picture-in-picture' ? 'inline' : 'picture-in-picture'
-      );
-    } catch (err) { toast('无法开启画中画'); }
-    return;
-  }
-  toast('不支持画中画');
-});
+function showPopover(url){
+  // 解析来源域名
+  let host = '未知来源';
+  try { host = new URL(url).hostname; }
+  catch(e){ host = '本地链接'; }
 
-/* ================= 全屏（稳定版） ================= */
-function isFullscreen() {
-  return !!(document.fullscreenElement || document.webkitFullscreenElement ||
-    document.mozFullScreenElement || document.msFullscreenElement ||
-    video.webkitDisplayingFullscreen);
-}
-function updateFsIcon() {
-  fsBtn.innerHTML = isFullscreen() ? I.fsOut : I.fs;
-}
-async function enterFs() {
-  wasPlaying = !video.paused;
-  let ok = false;
-  const el = player;
-  try {
-    if (el.requestFullscreen) { await el.requestFullscreen(); ok = true; }
-    else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); ok = true; }
-    else if (el.webkitRequestFullScreen) { el.webkitRequestFullScreen(); ok = true; }
-    else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); ok = true; }
-    else if (el.msRequestFullscreen) { el.msRequestFullscreen(); ok = true; }
-  } catch (e) { ok = false; }
-  if (!ok && video.webkitEnterFullscreen) {
-    try { video.webkitEnterFullscreen(); ok = true; } catch (e) {}
-  }
-  if (!ok) { toast('不支持全屏'); return; }
-  try {
-    if (screen.orientation && screen.orientation.lock) {
-      screen.orientation.lock('landscape').catch(() => {});
-    }
-  } catch (e) {}
-  setTimeout(updateFsIcon, 100);
-}
-async function exitFs() {
-  try {
-    if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
-  } catch (e) {}
-  try {
-    if (document.exitFullscreen) await document.exitFullscreen();
-    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-    else if (document.webkitCancelFullScreen) document.webkitCancelFullScreen();
-    else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
-    else if (document.msExitFullscreen) document.msExitFullscreen();
-  } catch (e) {}
-  if (video.webkitDisplayingFullscreen) {
-    try { video.webkitExitFullscreen(); } catch (e) {}
-  }
-  setTimeout(updateFsIcon, 100);
-}
-fsBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  isFullscreen() ? exitFs() : enterFs();
-});
-['fullscreenchange','webkitfullscreenchange','mozfullscreenchange','MSFullscreenChange'].forEach((ev) => {
-  document.addEventListener(ev, () => {
-    updateFsIcon();
-    if (isFullscreen() && wasPlaying && video.paused) video.play().catch(() => {});
-  });
-});
-video.addEventListener('webkitbeginfullscreen', updateFsIcon);
-video.addEventListener('webkitendfullscreen', updateFsIcon);
-
-/* ================= 解码配置 ================= */
-const DECS = {
-  auto:   { name: '智能解码', desc: '自动选择最优', auto: true },
-  boost:  { name: '疾速 Turbo', desc: '高并发快速起播', hls: {
-    enableWorker: true, maxBufferLength: 90, maxMaxBufferLength: 200, backBufferLength: 60,
-    startLevel: -1, fragLoadingMaxRetry: 8, manifestLoadingMaxRetry: 6 } },
-  hw:     { name: '硬件加速', desc: 'GPU 硬解省电', hls: {
-    enableWorker: true, enableSoftwareAES: false, capLevelToPlayerSize: true, startLevel: -1 } },
-  sw:     { name: '软件解码', desc: '主线程软解兼容强', hls: {
-    enableWorker: false, enableSoftwareAES: true, startLevel: -1, maxBufferLength: 60 } },
-  smooth: { name: '流畅优先', desc: '大缓冲长片首选', hls: {
-    enableWorker: true, maxBufferLength: 120, maxMaxBufferLength: 300, backBufferLength: 180, startLevel: -1 } },
-  compat: { name: '兼容模式', desc: '弱网老旧设备', hls: {
-    enableWorker: false, enableSoftwareAES: true, maxBufferLength: 30, backBufferLength: 30,
-    manifestLoadingMaxRetry: 8, levelLoadingMaxRetry: 8, fragLoadingMaxRetry: 10, startLevel: -1 } },
-  secure: { name: '加密增强', desc: 'AES 加密流专用', hls: {
-    enableWorker: true, enableSoftwareAES: true, maxBufferLength: 60, backBufferLength: 60,
-    startLevel: -1, fragLoadingMaxRetry: 8, manifestLoadingMaxRetry: 6, levelLoadingMaxRetry: 6 } },
-  native: { name: '原生解码', desc: 'Safari / iOS 最佳', native: true }
-};
-const DEC_ORDER = ['auto','boost','hw','sw','smooth','compat','secure','native'];
-let currentDec = 'auto';
-try { const s = localStorage.getItem('vodcore_dec_gen2'); if (s && DECS[s]) currentDec = s; } catch (e) {}
-
-function pickAutoDec() {
-  if (ENV.isIOS) return ENV.nativeHlsOk ? 'native' : 'compat';
-  if (ENV.isSafari && !ENV.isMobile) return ENV.nativeHlsOk ? 'native' : (ENV.hlsJsOk ? 'hw' : 'compat');
-  if (!ENV.hlsJsOk) return ENV.nativeHlsOk ? 'native' : 'compat';
-  if (ENV.lowEnd) return 'compat';
-  if (ENV.isMobile) return 'smooth';
-  return 'boost';
-}
-function resolveDec(k) {
-  if (DECS[k] && DECS[k].auto) {
-    const p = pickAutoDec();
-    return DECS[p] ? p : 'compat';
-  }
-  return DECS[k] ? k : 'compat';
-}
-
-/* ================= 加载视频 ================= */
-async function loadStream(url, resumeAt) {
-  url = (url || '').trim();
-  if (!url) { toast('请输入链接'); return; }
-  resumeAt = resumeAt || 0;
-
-  currentUrl = url;
-  marks = (store[url] || []).slice();
-  renderMarks();
-  renderMarksLayer();
-
-  if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
-  retries = 0;
-  hasSource = true;
-
-  try { video.pause(); video.removeAttribute('src'); video.load(); } catch (e) {}
-
-  showLoaderNow();
-
-  // 内容探测
-  const probe = await AntiHotlink.probe(url);
-
-  if (probe.type === 'html' || probe.type === 'json' || probe.type === 'unknown') {
-    hideLoader();
-    setBadge('⚠️ 返回内容异常', 'err');
-    toast('警告：' + probe.message);
-    showDiag(buildDiagHtml(url, probe));
-    return;
-  }
-  if (probe.type === 'http' || probe.type === 'network') {
-    hideLoader();
-    setBadge('⚠️ ' + (probe.message || '加载失败'), 'err');
-    toast('加载失败：' + (probe.message || '网络失败'));
-    showDiag(buildDiagHtml(url, probe));
-    return;
-  }
-  if (probe.redirected && probe.finalUrl && probe.finalUrl !== url) {
-    console.warn('[VodCore] URL 被重定向：', url, '→', probe.finalUrl);
-  }
-
-  const decKey = resolveDec(currentDec);
-  const dec = DECS[decKey] || DECS.compat;
-  const isDirect = probe.type === 'direct';
-  const useHlsJs = !isDirect && ENV.hlsJsOk && !dec.native;
-  const mode = probe.encrypted ? 'warn' : '';
-  const encLabel = probe.encrypted ? ' · ' + probe.encrypted : '';
-  setBadge('VodCore · ' + (isDirect ? '直链' : dec.name) + encLabel, mode);
-
-  if (currentDec === 'auto' && !isDirect) toast('智能解码 → ' + dec.name);
-
-  if (useHlsJs) loadHls(url, dec, resumeAt);
-  else if (ENV.nativeHlsOk || isDirect) loadNative(url, resumeAt);
-  else {
-    hideLoader();
-    setBadge('无可用解码', 'err');
-    toast('请点击「解码」切换');
-  }
-}
-
-function loadHls(url, dec, resumeAt) {
-  const baseCfg = {
-    enableWorker: true,
-    lowLatencyMode: false,
-    backBufferLength: 60,
-    maxBufferLength: 60,
-    maxMaxBufferLength: 180,
-    manifestLoadingMaxRetry: 4,
-    levelLoadingMaxRetry: 4,
-    fragLoadingMaxRetry: 6,
-    manifestLoadingTimeOut: 20000,
-    levelLoadingTimeOut: 20000,
-    fragLoadingTimeOut: 30000,
-    startLevel: -1,
-    // 反防盗链：所有 XHR 不走凭据
-    xhrSetup: (xhr) => { try { xhr.withCredentials = false; } catch (e) {} },
-    // 反防盗链：所有 fetch 请求强制 no-referrer
-    fetchSetup: (context, initParams) => {
-      initParams.referrerPolicy = 'no-referrer';
-      initParams.credentials = 'omit';
-      return new Request(context.url, initParams);
-    }
+  currentVideo = {
+    title   : DEMO_TITLES[Math.floor(Math.random() * DEMO_TITLES.length)],
+    host    : host,
+    duration: '12:36'
   };
-  const cfg = Object.assign(baseCfg, dec.hls || {});
-  let h;
-  try { h = new window.Hls(cfg); }
-  catch (e) {
-    hideLoader();
-    setBadge('内核启动失败', 'err');
-    toast('HLS 启动失败：' + e.message);
-    return;
+
+  // 填充信息
+  $('#vTitle').textContent  = currentVideo.title;
+  $('#vSource').textContent = currentVideo.host;
+  $('#vDur').textContent    = '时长 ' + currentVideo.duration;
+
+  // 重置播放状态
+  resetPlayer();
+
+  popover.classList.add('show');
+  popover.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function resetPlayer(){
+  clearInterval(playTimer);
+  playTimer = null;
+  videoStage.classList.remove('playing');
+  stageFill.style.width = '0%';
+  stageTime.textContent = '00:00 / ' + (currentVideo ? currentVideo.duration : '00:00');
+
+  dlBtn.classList.remove('ready');
+  dlBtn.disabled = true;
+  dlText.textContent = '点击视频并播放以检测源…';
+}
+
+/* ==================== 播放模拟 ==================== */
+videoStage.addEventListener('click', () => {
+  if(!currentVideo) return;
+  if(videoStage.classList.contains('playing')){
+    // 暂停
+    clearInterval(playTimer);
+    playTimer = null;
+    videoStage.classList.remove('playing');
+  }else{
+    startPlay();
   }
-  hls = h;
+});
 
-  h.on(window.Hls.Events.KEY_LOADING, () => setBadge('VodCore · 解密中…', 'warn'));
-  h.on(window.Hls.Events.KEY_LOADED, () => setBadge('VodCore · 已解密', 'warn'));
-
-  h.on(window.Hls.Events.MANIFEST_PARSED, () => {
-    hideLoader();
-    if (resumeAt > 0) { try { video.currentTime = resumeAt; } catch (e) {} }
-    video.play().catch(() => {});
-  });
-
-  h.on(window.Hls.Events.ERROR, (evt, data) => {
-    if (!data.fatal) return;
-    if (data.type === window.Hls.ErrorTypes.NETWORK_ERROR && retries < 4) {
-      retries++;
-      toast('网络抖动，重试 (' + retries + '/4)…');
-      try { h.startLoad(); } catch (e) {}
-      return;
-    }
-    if (data.type === window.Hls.ErrorTypes.MEDIA_ERROR && retries < 4) {
-      retries++;
-      toast('解码恢复 (' + retries + '/4)…');
-      try { h.recoverMediaError(); } catch (e) {}
-      return;
-    }
-    if (data.details && /key/i.test(data.details)) {
-      hideLoader();
-      setBadge('⚠️ 解密失败', 'err');
-      toast('解密失败：' + data.details);
-      return;
-    }
-    if (retries >= 4 && currentDec !== 'compat') {
-      toast('多次失败，降级至兼容模式…');
-      currentDec = 'compat';
-      try { localStorage.setItem('vodcore_dec_gen2', 'compat'); } catch (e) {}
-      updateDecBtn();
-      loadStream(currentUrl, video.currentTime || 0);
-      return;
-    }
-    hideLoader();
-    setBadge('⚠️ 播放失败', 'err');
-    toast('播放失败：' + (data.details || '未知错误'));
-  });
-
-  h.loadSource(url);
-  h.attachMedia(video);
-}
-
-function loadNative(url, resumeAt) {
-  try { video.referrerPolicy = 'no-referrer'; } catch (e) {}
-
-  const onMeta = () => {
-    video.removeEventListener('loadedmetadata', onMeta);
-    hideLoader();
-    setBadge('VodCore · 原生解码', '');
-    if (resumeAt > 0) { try { video.currentTime = resumeAt; } catch (e) {} }
-    video.play().catch(() => {});
-  };
-  video.addEventListener('loadedmetadata', onMeta);
-
-  const onErr = () => {
-    video.removeEventListener('error', onErr);
-    hideLoader();
-    setBadge('原生失败', 'err');
-    if (currentDec !== 'compat' && ENV.hlsJsOk) {
-      toast('原生失败，切 HLS 内核…');
-      currentDec = 'compat';
-      try { localStorage.setItem('vodcore_dec_gen2', 'compat'); } catch (e) {}
-      updateDecBtn();
-      loadStream(currentUrl, video.currentTime || 0);
-    } else {
-      toast('原生解码失败，请点击「解码」切换');
-    }
-  };
-  video.addEventListener('error', onErr, { once: true });
-
-  video.src = url;
-}
-
-/* ================= 解码菜单 ================= */
-function updateDecBtn() {
-  const d = DECS[currentDec] || DECS.auto;
-  let tip = '当前：' + d.name;
-  if (d.auto) {
-    const r = resolveDec('auto');
-    tip = '智能 → ' + (DECS[r] ? DECS[r].name : '兼容');
-  }
-  decBtn.title = tip + '（点击切换）';
-}
-function renderDecMenu() {
-  decMenu.innerHTML = '';
-  const real = resolveDec(currentDec);
-  const head = document.createElement('div');
-  head.className = 'dec-head';
-  head.innerHTML = '<span>解码引擎</span>' +
-    (ENV.hlsJsOk ? '<span class="badge">HLS 就绪</span>' : '<span class="badge">仅原生</span>');
-  decMenu.appendChild(head);
-
-  DEC_ORDER.forEach((k) => {
-    const d = DECS[k];
-    if (!d) return;
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.dataset.dec = k;
-    b.className = 'dec-item' + (k === currentDec ? ' active' : '');
-    let disabled = false;
-    if (!d.native && !ENV.hlsJsOk) disabled = true;
-    if (d.native && !ENV.nativeHlsOk && !/\.(mp4|webm|ogg|ogv|mov|m4v)/i.test(currentUrl || '')) disabled = true;
-    if (disabled) b.disabled = true;
-
-    let n = '<span class="dn">' + d.name;
-    if (k === currentDec) n += '<span style="color:#a5b4fc;font-size:11px">✓</span>';
-    n += '</span>';
-    let desc = d.desc;
-    if (d.auto && real !== 'auto') desc = '实际：' + DECS[real].name;
-    b.innerHTML = n + '<span class="dd">' + desc + '</span>';
-    decMenu.appendChild(b);
-
-    if (k === 'auto') {
-      const s = document.createElement('div');
-      s.className = 'sep';
-      decMenu.appendChild(s);
-    }
-  });
-}
-function openDecMenu() {
-  renderDecMenu();
-  decMenu.hidden = false;
-  const r = decBtn.getBoundingClientRect();
-  const w = decMenu.offsetWidth, h = decMenu.offsetHeight;
-  let left = Math.min(r.left, window.innerWidth - w - 10);
-  let top = r.bottom + 6;
-  if (top + h > window.innerHeight - 10) top = Math.max(10, r.top - h - 6);
-  decMenu.style.left = Math.max(10, left) + 'px';
-  decMenu.style.top = Math.max(10, top) + 'px';
-}
-decBtn.addEventListener('click', (e) => {
+playBtn.addEventListener('click', e => {
   e.stopPropagation();
-  if (!decMenu.hidden) { decMenu.hidden = true; return; }
-  openDecMenu();
-});
-decMenu.addEventListener('click', (e) => {
-  const b = e.target.closest('button[data-dec]');
-  if (!b || b.disabled) return;
-  const k = b.dataset.dec;
-  decMenu.hidden = true;
-  if (k === currentDec) { toast('当前已是该解码'); return; }
-  currentDec = k;
-  try { localStorage.setItem('vodcore_dec_gen2', k); } catch (e) {}
-  updateDecBtn();
-  const real = resolveDec(k);
-  toast('已切换：' + DECS[k].name + (DECS[k].auto ? '（实际：' + DECS[real].name + '）' : ''));
-  if (currentUrl) loadStream(currentUrl, isFinite(video.currentTime) ? video.currentTime : 0);
+  startPlay();
 });
 
-/* ================= 标记系统 ================= */
-function renderMarksLayer() {
-  marksLayer.innerHTML = '';
-  const d = video.duration;
-  if (!isFinite(d) || d <= 0) return;
-  const frag = document.createDocumentFragment();
-  marks.forEach((m) => {
-    const i = document.createElement('i');
-    i.style.left = Math.min(100, Math.max(0, (m.time / d) * 100)) + '%';
-    frag.appendChild(i);
+function startPlay(){
+  if(videoStage.classList.contains('playing')) return;
+  videoStage.classList.add('playing');
+
+  // ★ 检测到视频源 → 下载按钮变红
+  dlBtn.classList.add('ready');
+  dlBtn.disabled = false;
+  dlText.textContent = '下载视频';
+
+  // 模拟播放进度
+  let t = 0;
+  const total = 12 * 60 + 36;   // 12:36
+  clearInterval(playTimer);
+  playTimer = setInterval(() => {
+    t += 6;
+    if(t >= total) t = 0;
+    stageFill.style.width = (t / total * 100) + '%';
+    stageTime.textContent = fmtTime(t) + ' / ' + fmtTime(total);
+  }, 120);
+}
+
+$('#popClose').addEventListener('click', () => {
+  popover.classList.remove('show');
+  clearInterval(playTimer);
+  playTimer = null;
+});
+
+/* ==================== 点击下载 → 画质弹层 ==================== */
+dlBtn.addEventListener('click', () => {
+  if(dlBtn.disabled) return;
+  openQualityModal();
+});
+
+const qualityModal = $('#qualityModal');
+const qualityList  = $('#qualityList');
+
+function openQualityModal(){
+  selectedQuality = '1080';
+  renderQualityList();
+  qualityModal.classList.add('show');
+}
+
+function renderQualityList(){
+  qualityList.innerHTML = QUALITIES.map(q => `
+    <button class="q-item ${q.id === selectedQuality ? 'selected' : ''}" data-id="${q.id}">
+      <span class="q-radio"></span>
+      <span class="q-label">${q.label}</span>
+      <span class="q-tag">${q.tag}</span>
+      ${q.rec ? '<span class="q-rec">推荐</span>' : ''}
+      <span class="q-size">${q.size.toFixed(1)} MB</span>
+    </button>
+  `).join('');
+
+  qualityList.querySelectorAll('.q-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedQuality = btn.dataset.id;
+      qualityList.querySelectorAll('.q-item').forEach(b =>
+        b.classList.toggle('selected', b === btn));
+    });
   });
-  marksLayer.appendChild(frag);
+
+  const cur = QUALITIES.find(q => q.id === selectedQuality);
+  $('#qualitySizeHint').textContent = '预计 ' + cur.size.toFixed(1) + ' MB';
 }
-function renderMarks() {
-  const q = searchInput.value.trim().toLowerCase();
-  marksList.innerHTML = '';
-  if (!marks.length) {
-    emptyTip.hidden = false;
-    emptyTip.textContent = '还没有标记 · 点击上方 🏳 旗子标记当前时间';
-    return;
-  }
-  emptyTip.hidden = true;
-  const list = q ? marks.filter((m) =>
-    (m.title || '').toLowerCase().includes(q) || fmtTime(m.time).toLowerCase().includes(q)) : marks;
-  if (!list.length) {
-    const d = document.createElement('div');
-    d.className = 'empty';
-    d.textContent = '没有找到「' + q + '」';
-    marksList.appendChild(d);
-    return;
-  }
-  const frag = document.createDocumentFragment();
-  list.forEach((m) => frag.appendChild(buildMarkEl(m)));
-  marksList.appendChild(frag);
+
+$('#modalClose').addEventListener('click', () => qualityModal.classList.remove('show'));
+qualityModal.addEventListener('click', e => {
+  if(e.target === qualityModal) qualityModal.classList.remove('show');
+});
+
+$('#confirmDownload').addEventListener('click', () => {
+  qualityModal.classList.remove('show');
+  createTask(selectedQuality);
+  switchView('manager');
+  toast('已加入下载队列，正在高速下载…');
+});
+
+/* ==================== 下载任务 ==================== */
+const taskList  = $('#taskList');
+const taskBadge = $('#taskBadge');
+const taskCount = $('#taskCount');
+
+function updateBadge(){
+  const n = tasks.length;
+  taskBadge.textContent = n;
+  taskBadge.classList.toggle('on', n > 0);
+  taskCount.textContent = n + ' 个任务';
 }
-function buildMarkEl(m) {
+
+function createTask(qualityId){
+  const q = QUALITIES.find(x => x.id === qualityId);
+
+  const task = {
+    id      : 't' + Date.now() + Math.floor(Math.random() * 1000),
+    title   : currentVideo ? currentVideo.title : '未命名视频',
+    quality : q.label,
+    size    : q.size,
+    loaded  : 0,
+    speed   : 0,
+    baseSpeed: 45 + Math.random() * 25,   // MB/s
+    status  : 'downloading',
+    el      : null
+  };
+
+  tasks.push(task);
+  renderTask(task);
+  updateBadge();
+  startDownload(task);
+}
+
+function renderTask(task){
+  const empty = taskList.querySelector('.empty');
+  if(empty) empty.remove();
+
   const el = document.createElement('div');
-  el.className = 'mk';
-  const dot = document.createElement('span'); dot.className = 'dot';
-  const t = document.createElement('span'); t.className = 't'; t.textContent = fmtTime(m.time);
-  const title = document.createElement('span'); title.className = 'title'; title.textContent = m.title || '未命名';
-  const del = document.createElement('button'); del.className = 'del'; del.type = 'button';
-  del.title = '点击删除 · 长按清空全部'; del.innerHTML = I.trash;
-  el.append(dot, t, title, del);
+  el.className = 'task';
+  el.dataset.id = task.id;
+  el.innerHTML = `
+    <div class="task-top">
+      <div class="task-thumb">▶</div>
+      <div class="task-info">
+        <div class="task-name">${escapeHtml(task.title)}</div>
+        <div class="task-sub">
+          <span class="q-chip">${task.quality}</span>
+          <span>${task.size.toFixed(1)} MB</span>
+        </div>
+      </div>
+      <div class="task-status">下载中</div>
+    </div>
+    <div class="bar"><div class="bar-fill"></div></div>
+    <div class="task-foot">
+      <span class="speed">连接中…</span>
+      <span class="pct">0%</span>
+    </div>
+    <button class="export-btn" hidden>⬇ 导出到本地</button>
+  `;
 
-  // 主体：点击跳转 + 长按菜单
-  let longT = null, longFired = false, moved = false, sx = 0, sy = 0;
-  el.addEventListener('pointerdown', (e) => {
-    if (e.button > 0 || e.target === del || del.contains(e.target)) return;
-    longFired = false; moved = false; sx = e.clientX; sy = e.clientY;
-    longT = setTimeout(() => { longT = null; longFired = true; openMarkMenu(m, el); }, 520);
-  });
-  el.addEventListener('pointermove', (e) => {
-    if (moved || !longT) return;
-    if (Math.abs(e.clientX - sx) > 8 || Math.abs(e.clientY - sy) > 8) {
-      moved = true; clearTimeout(longT); longT = null;
-    }
-  });
-  el.addEventListener('pointerup', (e) => {
-    if (longT) {
-      clearTimeout(longT); longT = null;
-      if (!longFired && !moved && e.target !== del && !del.contains(e.target)) {
-        video.currentTime = m.time;
-        toast('跳转 ' + fmtTime(m.time));
-      }
-    }
-  });
-  el.addEventListener('pointercancel', () => { if (longT) { clearTimeout(longT); longT = null; } });
-
-  // 删除按钮：点击删除 + 长按清空
-  let delT = null, delLongFired = false;
-  del.addEventListener('pointerdown', (e) => {
-    if (e.button > 0) return;
-    delLongFired = false;
-    delT = setTimeout(() => { delT = null; delLongFired = true; clearAllMarks(); }, 620);
-    e.stopPropagation();
-  });
-  del.addEventListener('pointerup', (e) => {
-    if (delT) {
-      clearTimeout(delT); delT = null;
-      if (!delLongFired) deleteMark(m.id);
-    }
-    e.stopPropagation();
-  });
-  del.addEventListener('pointercancel', () => { if (delT) { clearTimeout(delT); delT = null; } });
-
-  return el;
-}
-function addMark() {
-  if (!hasSource) { toast('请先输入链接'); return; }
-  const t = video.currentTime;
-  if (!isFinite(t)) { toast('视频未就绪'); return; }
-  marks.push({
-    id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    time: t,
-    title: '标记 ' + (marks.length + 1)
-  });
-  marks.sort((a, b) => a.time - b.time);
-  saveMarks();
-  renderMarks();
-  renderMarksLayer();
-  toast('已标记 ' + fmtTime(t));
-}
-function deleteMark(id) {
-  marks = marks.filter((m) => m.id !== id);
-  saveMarks(); renderMarks(); renderMarksLayer();
-  toast('已删除');
-}
-function clearAllMarks() {
-  if (!marks.length) { toast('没有标记'); return; }
-  if (!confirm('删除全部 ' + marks.length + ' 个标记？')) return;
-  marks = [];
-  saveMarks(); renderMarks(); renderMarksLayer();
-  toast('已清空');
-}
-flagBtn.addEventListener('click', addMark);
-searchInput.addEventListener('input', renderMarks);
-
-let markMenuId = null;
-function openMarkMenu(m, anchor) {
-  markMenuId = m.id;
-  markMenu.hidden = false;
-  const r = anchor.getBoundingClientRect();
-  const w = markMenu.offsetWidth, h = markMenu.offsetHeight;
-  let left = Math.min(r.left, window.innerWidth - w - 10);
-  let top = r.bottom + 6;
-  if (top + h > window.innerHeight - 10) top = Math.max(10, r.top - h - 6);
-  markMenu.style.left = Math.max(10, left) + 'px';
-  markMenu.style.top = Math.max(10, top) + 'px';
-}
-markMenu.addEventListener('click', (e) => {
-  const b = e.target.closest('button[data-act]');
-  if (!b) return;
-  const act = b.dataset.act;
-  const m = marks.find((x) => x.id === markMenuId);
-  markMenu.hidden = true;
-  if (!m) return;
-  if (act === 'seek') { video.currentTime = m.time; toast('跳转 ' + fmtTime(m.time)); }
-  else if (act === 'rename') {
-    const n = prompt('重命名标记', m.title || '');
-    if (n !== null) { m.title = n; saveMarks(); renderMarks(); toast('已重命名'); }
-  } else if (act === 'delete') deleteMark(m.id);
-});
-document.addEventListener('click', (e) => {
-  if (!markMenu.hidden && !markMenu.contains(e.target)) markMenu.hidden = true;
-  if (!decMenu.hidden && !decMenu.contains(e.target) && !decBtn.contains(e.target)) decMenu.hidden = true;
-});
-
-/* ================= 解密引擎 ================= */
-const KeyCache = new Map();
-function hexToBytes(h) {
-  h = String(h).replace(/^0x/i, '').replace(/[^0-9a-f]/gi, '');
-  if (h.length % 2) h = '0' + h;
-  const b = new Uint8Array(h.length / 2);
-  for (let i = 0; i < b.length; i++) b[i] = parseInt(h.substr(i * 2, 2), 16);
-  if (b.length === 16) return b;
-  const p = new Uint8Array(16);
-  p.set(b.slice(0, 16));
-  return p;
-}
-function deriveIV(k, seq) {
-  if (k && k.iv) return hexToBytes(k.iv);
-  const iv = new Uint8Array(16);
-  new DataView(iv.buffer).setUint32(12, seq >>> 0, false);
-  return iv;
-}
-function normalizeKey(k) {
-  if (k.length === 16 || k.length === 24 || k.length === 32) return k;
-  if (k.length > 16) return k.slice(0, 16);
-  const p = new Uint8Array(16); p.set(k); return p;
-}
-async function getKeyBytes(uri, signal) {
-  if (KeyCache.has(uri)) return KeyCache.get(uri);
-  const p = (async () => {
-    const res = await AntiHotlink.request(uri, { signal });
-    if (!res.ok) throw new Error('密钥 HTTP ' + res.status);
-    return new Uint8Array(await res.arrayBuffer());
-  })();
-  KeyCache.set(uri, p);
-  try { return await p; }
-  catch (e) { KeyCache.delete(uri); throw e; }
-}
-async function aesCbc(data, kb, iv) {
-  if (!ENV.webCryptoOk) throw new Error('WebCrypto 不可用（需 HTTPS）');
-  if (!data.length) return data;
-  if (data.length % 16 !== 0) {
-    const a = data.length - (data.length % 16);
-    if (!a) throw new Error('密文长度不足');
-    data = data.slice(0, a);
-  }
-  const key = await crypto.subtle.importKey('raw', normalizeKey(kb), { name: 'AES-CBC' }, false, ['decrypt']);
-  const out = await crypto.subtle.decrypt({ name: 'AES-CBC', iv }, key, data);
-  return new Uint8Array(out);
-}
-async function aesCtr(data, kb, counter) {
-  if (!ENV.webCryptoOk) throw new Error('WebCrypto 不可用');
-  if (!data.length) return data;
-  const key = await crypto.subtle.importKey('raw', normalizeKey(kb), { name: 'AES-CTR' }, false, ['decrypt']);
-  const out = await crypto.subtle.decrypt({ name: 'AES-CTR', counter, length: 64 }, key, data);
-  return new Uint8Array(out);
-}
-async function decryptSegment(data, kInfo, seq, signal) {
-  if (!kInfo || !kInfo.method || kInfo.method.toUpperCase() === 'NONE') return data;
-  const m = kInfo.method.toUpperCase();
-  if (kInfo.keyFormat && kInfo.keyFormat !== 'identity') {
-    throw new Error('不支持 ' + kInfo.keyFormat + ' 加密（DRM）');
-  }
-  if (m === 'AES-128' || m === 'AES-192' || m === 'AES-256') {
-    const kb = await getKeyBytes(kInfo.uri, signal);
-    return aesCbc(data, kb, deriveIV(kInfo, seq));
-  }
-  if (m === 'SAMPLE-AES-CTR') {
-    const kb = await getKeyBytes(kInfo.uri, signal);
-    return aesCtr(data, kb, deriveIV(kInfo, seq));
-  }
-  if (m === 'SAMPLE-AES') {
-    const kb = await getKeyBytes(kInfo.uri, signal);
-    return aesCbc(data, kb, deriveIV(kInfo, seq));
-  }
-  throw new Error('未知加密：' + m);
-}
-
-/* ================= M3U8 解析 ================= */
-function parseM3U8(text, baseUrl) {
-  text = text.replace(/^\uFEFF/, '');
-  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-  if (!lines[0] || lines[0].indexOf('#EXTM3U') !== 0) throw new Error('缺少 #EXTM3U 头');
-  const r = { isMaster: false, variants: [], segments: [], initSegment: null, encMethods: new Set() };
-  const resolve = (u) => { try { return new URL(u, baseUrl).href; } catch (e) { return u; } };
-  const parseAttrs = (line) => {
-    const a = {};
-    const re = /([A-Z0-9-]+)=("([^"]*)"|[^,]*)/gi;
-    let m;
-    while ((m = re.exec(line)) !== null) {
-      a[m[1].toUpperCase()] = m[3] !== undefined ? m[3] : m[2].trim();
-    }
-    return a;
+  const refs = {
+    barFill  : el.querySelector('.bar-fill'),
+    speed    : el.querySelector('.speed'),
+    pct      : el.querySelector('.pct'),
+    status   : el.querySelector('.task-status'),
+    exportBtn: el.querySelector('.export-btn'),
+    thumb    : el.querySelector('.task-thumb')
   };
-  let ck = null, cbr = null, pd = -1, pi = null, seq = 0, lbe = 0;
-  for (let i = 0; i < lines.length; i++) {
-    const l = lines[i];
-    if (!l) continue;
-    if (l[0] !== '#') {
-      const uri = resolve(l);
-      if (pi) { r.variants.push(Object.assign({ url: uri }, pi)); pi = null; continue; }
-      if (pd >= 0) {
-        r.segments.push({ url: uri, duration: pd, key: ck, sequence: seq, byteRange: cbr });
-        seq++; pd = -1; cbr = null;
-      }
-      continue;
-    }
-    if (l.indexOf('#EXT-X-MEDIA-SEQUENCE:') === 0) {
-      seq = parseInt(l.split(':')[1], 10) || 0;
-    } else if (l.indexOf('#EXT-X-STREAM-INF:') === 0) {
-      r.isMaster = true;
-      const a = parseAttrs(l);
-      pi = { bandwidth: parseInt(a.BANDWIDTH, 10) || 0, resolution: a.RESOLUTION || '', name: a.NAME || '' };
-    } else if (l.indexOf('#EXT-X-KEY:') === 0) {
-      const a = parseAttrs(l);
-      const method = (a.METHOD || '').toUpperCase();
-      if (!method || method === 'NONE') ck = null;
-      else {
-        ck = { method, uri: a.URI ? resolve(a.URI) : null, iv: a.IV || null, keyFormat: a.KEYFORMAT || 'identity' };
-        r.encMethods.add(method);
-      }
-    } else if (l.indexOf('#EXT-X-MAP:') === 0) {
-      const a = parseAttrs(l);
-      if (a.URI) r.initSegment = { url: resolve(a.URI), key: ck };
-    } else if (l.indexOf('#EXT-X-BYTERANGE:') === 0) {
-      const p = l.split(':')[1].split('@');
-      const len = parseInt(p[0], 10);
-      let off;
-      if (p[1] !== undefined) { off = parseInt(p[1], 10); lbe = off + len; }
-      else if (lbe > 0) { off = lbe; lbe = off + len; }
-      else { off = 0; lbe = len; }
-      cbr = { length: len, offset: off };
-    } else if (l.indexOf('#EXTINF:') === 0) {
-      const rest = l.substring(8);
-      const ci = rest.indexOf(',');
-      pd = parseFloat(ci >= 0 ? rest.substring(0, ci) : rest) || 0;
-    }
-  }
-  return r;
+  task.el = refs;
+
+  refs.exportBtn.addEventListener('click', () => exportTask(task));
+
+  taskList.prepend(el);
 }
 
-/* ================= 下载内核 ================= */
-const Downloader = {
-  active: false, ctrl: null,
-  stats: { start: 0, downloaded: 0, total: 0, done: 0, segs: 0, speed: 0 },
+function startDownload(task){
+  const TICK = 80;   // ms
 
-  isActive() { return this.active; },
-  cancel() { if (this.ctrl) { try { this.ctrl.abort(); } catch (e) {} toast('取消中…'); } },
-  reset() { this.setWarn(''); this.setState('idle'); },
-
-  setSub(t) { dlSub.textContent = t; },
-  setWarn(m) {
-    if (m) { dlWarn.innerHTML = m; dlWarn.classList.add('show'); }
-    else dlWarn.classList.remove('show');
-  },
-  setState(s, info) {
-    info = info || {};
-    if (s === 'idle') {
-      dlProg.hidden = true;
-      dlGo.disabled = false;
-      dlGo.textContent = '开始下载';
-      dlCard.classList.remove('active');
-      this.setSub(info.sub || 'M3U8 · AES-128/192/256 · fMP4 · 直链');
-    } else if (s === 'prep') {
-      dlCard.classList.add('active');
-      dlProg.hidden = false;
-      dlGo.disabled = true;
-      dlGo.textContent = '准备中';
-      dlFill.classList.add('ind');
-      dlFill.style.width = '';
-      dlPct.textContent = '0%'; dlSpd.textContent = '--';
-      dlRem.textContent = '--'; dlSize.textContent = '--';
-      dlCancel.disabled = false; dlCancel.textContent = '取消下载';
-      this.setSub(info.sub || '解析中…');
-    } else if (s === 'dl') {
-      dlCard.classList.add('active');
-      dlProg.hidden = false;
-      dlGo.disabled = true;
-      dlGo.textContent = '下载中';
-      dlFill.classList.remove('ind');
-      dlCancel.disabled = false;
-      this.setSub(info.sub || '下载中…');
-    } else if (s === 'merge') {
-      dlCard.classList.add('active');
-      dlProg.hidden = false;
-      dlFill.classList.add('ind');
-      dlGo.disabled = true;
-      dlGo.textContent = '合并中';
-      dlCancel.disabled = true;
-      this.setSub(info.sub || '合并中…');
-    } else if (s === 'done') {
-      dlCard.classList.remove('active');
-      dlGo.disabled = false;
-      dlGo.textContent = '重新下载';
-      dlFill.classList.remove('ind');
-      dlFill.style.width = '100%';
-      dlPct.textContent = '100%';
-      dlCancel.disabled = true;
-      dlCancel.textContent = '已完成';
-      this.setSub(info.sub || '已保存');
-    } else if (s === 'err') {
-      dlCard.classList.remove('active');
-      dlGo.disabled = false;
-      dlGo.textContent = '重试';
-      dlFill.classList.remove('ind');
-      dlCancel.disabled = true;
-      this.setSub('下载失败');
-    } else if (s === 'cancel') {
-      dlCard.classList.remove('active');
-      dlProg.hidden = true;
-      dlGo.disabled = false;
-      dlGo.textContent = '重新下载';
-      this.setSub('已取消');
-    }
-  },
-  updateProgress() {
-    const s = this.stats;
-    const el = (Date.now() - s.start) / 1000;
-    const sp = el > 0 ? s.downloaded / el : 0;
-    s.speed = sp;
-    let p = 0;
-    if (s.segs) p = s.done / s.segs;
-    else if (s.total) p = s.downloaded / s.total;
-    dlFill.style.width = (p * 100).toFixed(1) + '%';
-    dlPct.textContent = (p * 100).toFixed(1) + '%';
-    dlSpd.textContent = fmtSpeed(sp);
-    dlSize.textContent = fmtBytes(s.downloaded);
-    if (sp > 0 && s.segs && s.done > 0) {
-      const avg = s.downloaded / s.done;
-      dlRem.textContent = fmtRemain((s.segs - s.done) * avg / sp);
-    } else if (sp > 0 && s.total) {
-      dlRem.textContent = fmtRemain((s.total - s.downloaded) / sp);
-    } else dlRem.textContent = '--';
-  },
-  async fetchBin(url, signal, br) {
-    const opts = { signal };
-    if (br && br.length) {
-      const st = br.offset || 0;
-      opts.headers = { Range: `bytes=${st}-${st + br.length - 1}` };
-    }
-    const res = await AntiHotlink.request(url, opts);
-    if (!res.ok && res.status !== 206) throw new Error('HTTP ' + res.status);
-    return new Uint8Array(await res.arrayBuffer());
-  },
-  async fetchText(url, signal) {
-    const res = await AntiHotlink.request(url, { signal });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return { text: await res.text(), finalUrl: res.url };
-  },
-  async resolvePlaylist(url, signal, depth) {
-    depth = depth || 0;
-    if (depth > 5) throw new Error('M3U8 嵌套过深');
-    const { text, finalUrl } = await this.fetchText(url, signal);
-    if (!/^\s*#EXTM3U/i.test(text)) throw new Error('返回的不是 M3U8（可能被替换）');
-    const pl = parseM3U8(text, finalUrl);
-    if (pl.isMaster) {
-      if (!pl.variants.length) throw new Error('Master 无可用流');
-      pl.variants.sort((a, b) => {
-        const sa = (a.resolution || '0x0').split('x').reduce((x, y) => x * (parseInt(y, 10) || 0), 1) || 0;
-        const sb = (b.resolution || '0x0').split('x').reduce((x, y) => x * (parseInt(y, 10) || 0), 1) || 0;
-        if (sb !== sa) return sb - sa;
-        return (b.bandwidth || 0) - (a.bandwidth || 0);
-      });
-      const best = pl.variants[0];
-      this.setState('prep', { sub: '已选流 ' + (best.resolution || best.name || '默认') + '，继续解析…' });
-      return this.resolvePlaylist(best.url, signal, depth + 1);
-    }
-    return pl;
-  },
-  async start(url) {
-    if (this.active) { toast('已有下载任务'); return; }
-    if (!url) { toast('请先输入链接'); return; }
-
-    if (!ENV.webCryptoOk) {
-      this.setWarn('⚠️ 当前环境不支持 WebCrypto（需 HTTPS），加密流将无法解密。');
-    } else this.setWarn('');
-
-    this.active = true;
-    this.ctrl = new AbortController();
-    this.stats = { start: Date.now(), downloaded: 0, total: 0, done: 0, segs: 0, speed: 0 };
-    KeyCache.clear();
-    this.setState('prep', { sub: '解析中…' });
-    const signal = this.ctrl.signal;
-
-    try {
-      if (/\.(mp4|webm|ogg|ogv|mov|m4v|flv|mkv|avi|wmv|3gp)(\?|#|$)/i.test(url)) {
-        await this.dlDirect(url, signal);
-      } else {
-        await this.dlM3U8(url, signal);
-      }
-    } catch (e) {
-      if (signal.aborted || e.name === 'AbortError') {
-        this.setState('cancel'); toast('已取消');
-      } else {
-        console.error('[DL]', e);
-        this.setState('err');
-        const m = e.message || '未知错误';
-        let h = '⚠️ ' + m;
-        if (/Failed to fetch|NetworkError|Load failed/i.test(m)) {
-          h = '⚠️ 网络请求被阻止（CORS 跨域）。<br>目标服务器未开放跨域访问，浏览器端无法绕过。<br>请用「诊断」查看链接实际返回的内容。';
-        } else if (/不是 M3U8|HTML/i.test(m)) {
-          h = '⚠️ ' + m + '<br>请用「诊断」查看服务器实际返回的内容。';
-        } else if (/WebCrypto/i.test(m)) {
-          h = '⚠️ ' + m + '<br>请使用 HTTPS 部署本页面。';
-        }
-        this.setWarn(h);
-        toast('下载失败：' + m);
-      }
-    } finally {
-      this.active = false; this.ctrl = null;
-    }
-  },
-  async dlDirect(url, signal) {
-    this.setState('dl', { sub: '下载文件…' });
-    const res = await AntiHotlink.request(url, { signal });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    this.stats.total = parseInt(res.headers.get('content-length') || '0', 10);
-    if (!res.body) throw new Error('响应无 body');
-    const chunks = [];
-    const reader = res.body.getReader();
-    let got = 0, last = 0;
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      chunks.push(value);
-      got += value.length;
-      this.stats.downloaded = got;
-      const now = Date.now();
-      if (now - last > 180) { last = now; this.updateProgress(); }
-    }
-    this.stats.downloaded = got;
-    this.updateProgress();
-    this.setState('merge', { sub: '保存中…' });
-    const ext = (url.match(/\.(mp4|webm|mov|m4v|mkv|flv|avi|wmv|3gp)(\?|#|$)/i) || [, 'mp4'])[1];
-    const blob = new Blob(chunks, { type: 'video/' + ext });
-    saveBlob(blob, guessName(url, ext));
-    this.setState('done', { sub: '已保存 · ' + fmtBytes(blob.size) });
-    toast('下载完成 · ' + fmtBytes(blob.size));
-  },
-  async dlM3U8(url, signal) {
-    const pl = await this.resolvePlaylist(url, signal);
-    if (!pl.segments.length) throw new Error('未找到视频分片');
-
-    const methods = new Set();
-    if (pl.initSegment && pl.initSegment.key) methods.add(pl.initSegment.key.method);
-    pl.segments.forEach((s) => { if (s.key) methods.add(s.key.method); });
-    if (methods.has('SAMPLE-AES')) {
-      throw new Error('SAMPLE-AES 需容器级解析，浏览器端无法完成');
+  const timer = setInterval(() => {
+    if(task.status !== 'downloading'){
+      clearInterval(timer);
+      return;
     }
 
-    const encLabel = methods.size ? Array.from(methods).join('+') : '未加密';
-    const isFMP4 = !!pl.initSegment;
-    const ext = isFMP4 ? 'mp4' : 'ts';
-    const mime = isFMP4 ? 'video/mp4' : 'video/mp2t';
-    const total = pl.segments.length;
-    this.stats.segs = total;
-    this.setState('dl', { sub: `共 ${total} 段 · ${encLabel}` });
+    // 速度轻微抖动，视觉更真实
+    task.speed = Math.max(8, task.baseSpeed + (Math.random() - 0.5) * 8);
+    task.loaded += task.speed * (TICK / 1000);
 
-    const chunks = new Array(total);
-    const conc = Math.max(4, Math.min(8, ENV.cores || 4));
-    let nextIdx = 0, done = 0, last = 0;
-    const self = this;
-
-    const worker = async () => {
-      while (true) {
-        if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
-        const i = nextIdx++;
-        if (i >= total) return;
-        const seg = pl.segments[i];
-        let att = 0, lastErr;
-        while (att < 3) {
-          try {
-            let data = await self.fetchBin(seg.url, signal, seg.byteRange);
-            if (seg.key && seg.key.method && seg.key.method.toUpperCase() !== 'NONE') {
-              data = await decryptSegment(data, seg.key, seg.sequence, signal);
-            }
-            chunks[i] = data;
-            lastErr = null;
-            break;
-          } catch (err) {
-            lastErr = err;
-            att++;
-            if (att >= 3 || signal.aborted) throw err;
-            await new Promise((r) => setTimeout(r, 300 * att));
-          }
-        }
-        if (lastErr) throw lastErr;
-        done++;
-        self.stats.done = done;
-        self.stats.downloaded += chunks[i].byteLength;
-        const now = Date.now();
-        if (now - last > 180) {
-          last = now;
-          self.updateProgress();
-          dlSub.textContent = `共 ${total} 段 · ${encLabel} · ${done}/${total}`;
-        }
-      }
-    };
-    const workers = [];
-    for (let i = 0; i < conc; i++) workers.push(worker());
-    await Promise.all(workers);
-    self.updateProgress();
-
-    let initData = null;
-    if (pl.initSegment) {
-      this.setState('merge', { sub: '处理初始化段…' });
-      initData = await this.fetchBin(pl.initSegment.url, signal, null);
-      if (pl.initSegment.key && pl.initSegment.key.method && pl.initSegment.key.method.toUpperCase() !== 'NONE') {
-        initData = await decryptSegment(initData, pl.initSegment.key, 0, signal);
-      }
+    if(task.loaded >= task.size){
+      task.loaded = task.size;
+      clearInterval(timer);
+      finishTask(task);
     }
 
-    this.setState('merge', { sub: `合并 ${total} 个分片…` });
-    const parts = [];
-    if (initData) parts.push(initData);
-    for (let i = 0; i < total; i++) if (chunks[i]) parts.push(chunks[i]);
+    updateTaskUI(task);
+  }, TICK);
+}
 
-    const blob = new Blob(parts, { type: mime });
-    saveBlob(blob, guessName(url, ext));
-    this.setState('done', { sub: '已保存 · ' + fmtBytes(blob.size) });
-    toast('下载完成 · ' + fmtBytes(blob.size));
-  }
-};
-function saveBlob(blob, name) {
-  const url = URL.createObjectURL(blob);
+function updateTaskUI(task){
+  const pct = Math.min(100, task.loaded / task.size * 100);
+  task.el.barFill.style.width = pct.toFixed(2) + '%';
+  task.el.pct.textContent     = Math.floor(pct) + '%';
+  task.el.speed.textContent   = task.speed.toFixed(1) + ' MB/s';
+}
+
+function finishTask(task){
+  task.status = 'done';
+  const el = task.el;
+  el.barFill.style.width = '100%';
+  el.pct.textContent = '100%';
+  el.speed.textContent = '下载完成 · ' + task.size.toFixed(1) + ' MB';
+  el.status.textContent = '已完成';
+  el.thumb.textContent = '✓';
+  el.exportBtn.hidden = false;
+  el.exportBtn.closest('.task').classList.add('done');
+  toast('「' + task.title + '」下载完成，可导出');
+}
+
+/* ==================== 导出 ==================== */
+function exportTask(task){
+  const content =
+`闪电视频下载器 · 导出文件
+--------------------------------
+标题   : ${task.title}
+画质   : ${task.quality}
+大小   : ${task.size.toFixed(1)} MB
+导出时间: ${new Date().toLocaleString('zh-CN')}
+--------------------------------
+本文件为前端演示生成的占位内容。
+`;
+
+  const blob = new Blob([content], { type: 'video/mp4' });
+  const url  = URL.createObjectURL(blob);
+
   const a = document.createElement('a');
   a.href = url;
-  a.download = name;
+  a.download = `${task.title}_${task.quality}.mp4`;
   document.body.appendChild(a);
   a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 120000);
-}
-function guessName(url, ext) {
-  try {
-    const u = new URL(url);
-    let n = decodeURIComponent((u.pathname.split('/').pop() || 'video').split('?')[0]);
-    const d = n.lastIndexOf('.');
-    if (d > 0) n = n.substring(0, d);
-    n = n.replace(/[\\/:*?"<>|]/g, '_').slice(0, 60) || 'video';
-    return n + '_' + Date.now() + '.' + ext;
-  } catch (e) { return 'vodcore_' + Date.now() + '.' + ext; }
+  a.remove();
+
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  toast('已导出到本地下载目录');
 }
 
-dlGo.addEventListener('click', () => {
-  if (Downloader.isActive()) { toast('已有下载任务'); return; }
-  const u = currentUrl || urlInput.value.trim();
-  if (!u) { toast('请先输入链接'); return; }
-  Downloader.start(u);
-});
-dlCancel.addEventListener('click', () => { if (Downloader.isActive()) Downloader.cancel(); });
+/* ==================== 清除已完成 ==================== */
+$('#clearDone').addEventListener('click', () => {
+  const doneIds = tasks.filter(t => t.status === 'done').map(t => t.id);
+  if(!doneIds.length){ toast('暂无已完成的任务'); return; }
 
-/* ================= 诊断 ================= */
-function diagRow(k, v, cls) {
-  return '<div class="drow"><span class="k">' + k + '</span><span class="v ' + (cls || '') + '">' + v + '</span></div>';
-}
-function buildDiagHtml(url, probe) {
-  const out = [];
-  out.push('<h4>基本信息</h4>');
-  out.push(diagRow('URL', esc(url)));
-  out.push(diagRow('时间', esc(new Date().toLocaleString())));
-  out.push(diagRow('Referrer', 'no-referrer ✅', 'ok'));
-  out.push(diagRow('Credentials', 'omit ✅', 'ok'));
-  out.push(diagRow('Cache', 'no-store ✅', 'ok'));
-  out.push('<h4>响应分析</h4>');
-  out.push(diagRow('内容类型', esc(probe.type)));
-  if (probe.status) out.push(diagRow('HTTP 状态', probe.status, probe.status === 200 ? 'ok' : 'err'));
-  if (probe.redirected !== undefined) out.push(diagRow('重定向', probe.redirected ? '⚠️ 是' : '否', probe.redirected ? 'warn' : 'ok'));
-  if (probe.finalUrl && probe.finalUrl !== url) out.push(diagRow('最终 URL', esc(probe.finalUrl), 'warn'));
-  if (probe.encrypted !== undefined) out.push(diagRow('加密方式', probe.encrypted || '无', probe.encrypted ? 'warn' : 'ok'));
-  if (probe.length) out.push(diagRow('内容长度', probe.length + ' 字符'));
-  if (probe.message) out.push(diagRow('说明', esc(probe.message)));
-  if (probe.preview) {
-    out.push('<h4>内容预览（前 400 字符）</h4>');
-    out.push('<div class="dpre">' + esc(probe.preview) + '</div>');
+  doneIds.forEach(id => {
+    const el = taskList.querySelector(`.task[data-id="${id}"]`);
+    if(el) el.remove();
+  });
+
+  tasks = tasks.filter(t => t.status !== 'done');
+  updateBadge();
+
+  if(!tasks.length){
+    taskList.innerHTML = `<div class="empty"><div class="big">📥</div>暂无下载任务<br>去首页粘贴链接开始下载吧</div>`;
   }
-  out.push('<h4>判定</h4>');
-  if (probe.type === 'm3u8') {
-    out.push(diagRow('结论', '✅ 有效的 M3U8 播放列表', 'ok'));
-    if (probe.encrypted) out.push(diagRow('加密', '检测到 ' + probe.encrypted + ' 加密，播放时自动解密', 'warn'));
-  } else if (probe.type === 'html') {
-    out.push(diagRow('结论', '❌ 返回网页，不是视频源', 'err'));
-    out.push(diagRow('说明', '你复制的可能是"播放页 URL"。请在浏览器 F12 → Network 面板，找到真正以 .m3u8 结尾的请求地址'));
-  } else if (probe.type === 'json') {
-    out.push(diagRow('结论', '❌ 返回 JSON，可能是 API 接口', 'err'));
-    out.push(diagRow('说明', '需要从 JSON 里提取真正的 m3u8 地址'));
-  } else if (probe.type === 'http') {
-    out.push(diagRow('结论', '❌ 服务器返回错误状态', 'err'));
-    out.push(diagRow('说明', '链接可能已失效，或需要登录 / 鉴权参数'));
-  } else if (probe.type === 'network') {
-    out.push(diagRow('结论', '❌ 网络请求失败（通常是 CORS）', 'err'));
-    out.push(diagRow('说明', '目标服务器未开放跨域访问，浏览器安全限制无法绕过'));
-  } else {
-    out.push(diagRow('结论', '⚠️ 未知内容类型', 'warn'));
-  }
-  return out.join('');
-}
-function showDiag(html) {
-  diagBody.innerHTML = html;
-  diagPanel.hidden = false;
-}
-async function runDiag() {
-  const url = currentUrl || urlInput.value.trim();
-  if (!url) { toast('请先输入链接'); return; }
-  diagBody.innerHTML = '<div style="color:var(--text-3)">诊断中…</div>';
-  diagPanel.hidden = false;
-  diagSub.textContent = '正在请求…';
-  const probe = await AntiHotlink.probe(url);
-  diagSub.textContent = new Date().toLocaleTimeString();
-  diagBody.innerHTML = buildDiagHtml(url, probe);
-}
-diagBtn.addEventListener('click', runDiag);
-diagRun.addEventListener('click', runDiag);
-diagClose.addEventListener('click', () => { diagPanel.hidden = true; });
-diagCopy.addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText(diagBody.innerText);
-    toast('已复制');
-  } catch (e) { toast('复制失败'); }
+  toast('已清除 ' + doneIds.length + ' 个任务');
 });
-
-/* ================= URL 输入 ================= */
-pasteBtn.addEventListener('click', async () => {
-  try {
-    const t = await navigator.clipboard.readText();
-    if (t) { urlInput.value = t.trim(); urlInput.focus(); toast('已粘贴'); }
-  } catch (e) { toast('无法读取剪贴板，请手动粘贴'); }
-});
-loadBtn.addEventListener('click', () => {
-  const u = urlInput.value.trim();
-  try { localStorage.setItem('vodcore_last_gen2', u); } catch (e) {}
-  Downloader.reset();
-  loadStream(u);
-});
-urlInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    urlInput.blur();
-    const u = urlInput.value.trim();
-    try { localStorage.setItem('vodcore_last_gen2', u); } catch (e) {}
-    Downloader.reset();
-    loadStream(u);
-  }
-});
-
-/* ================= 键盘快捷键 ================= */
-document.addEventListener('keydown', (e) => {
-  const t = (e.target.tagName || '').toUpperCase();
-  if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT') return;
-  if (e.code === 'Space') { e.preventDefault(); togglePlay(); showCtrl(); }
-  else if (e.code === 'ArrowRight') { video.currentTime = Math.min((video.duration || 0) - 0.05, video.currentTime + 5); showCtrl(); }
-  else if (e.code === 'ArrowLeft') { video.currentTime = Math.max(0, video.currentTime - 5); showCtrl(); }
-  else if (e.key === 'm' || e.key === 'M') addMark();
-  else if (e.key === 'f' || e.key === 'F') { isFullscreen() ? exitFs() : enterFs(); }
-});
-
-/* ================= 初始化 ================= */
-syncPlayIcon();
-renderMarks();
-updateDecBtn();
-updateFsIcon();
-showCtrl();
-
-let lastUrl = '';
-try { lastUrl = localStorage.getItem('vodcore_last_gen2') || ''; } catch (e) {}
-if (lastUrl) urlInput.value = lastUrl;
-
-// 快捷检测
-console.log(
-  '%cVodCore GEN 2 %c反盗链引擎已就绪',
-  'background:linear-gradient(90deg,#5b8dff,#8b5cf6);color:#fff;padding:3px 10px;border-radius:5px;font-weight:700;',
-  'color:#5b8dff;font-weight:700;'
-);
-console.log('环境：', ENV);
-console.log('Referrer Policy：no-referrer（全局）');
-console.log('Credentials：omit（全局）');
-console.log('WebCrypto：', ENV.webCryptoOk ? '✅ 可用' : '❌ 需 HTTPS');
-console.log('智能解码推荐：', pickAutoDec());
-
-})();
 </script>
 </body>
-          </html>
+  </html>
