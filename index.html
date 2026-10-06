@@ -2,1062 +2,1339 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>闪电视频下载器 · 真·多线程下载</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>黑猫 · 本地文件加密</title>
 <style>
 :root{
-  --bg:#0a0d13; --card:#11151d; --line:rgba(255,255,255,.08);
-  --text:#e6e9ef; --muted:#7d8798; --red:#ff3b30; --red2:#ff6b35; --green:#22c55e;
+  --bg:#0a0c11; --bg2:#10131b; --card:#151924; --line:#242b3a;
+  --text:#e8edf7; --muted:#8a94a8;
+  --accent:#8b5cf6; --accent2:#4f8cff;
+  --ok:#34d399; --err:#f87171; --warn:#fbbf24;
+  --radius:16px;
 }
-*{box-sizing:border-box;}
+*{box-sizing:border-box;margin:0;padding:0;}
 body{
-  margin:0;min-height:100vh;
-  background:radial-gradient(900px 520px at 12% -12%,rgba(255,59,48,.16),transparent 62%),
-             radial-gradient(760px 420px at 92% -6%,rgba(124,58,237,.14),transparent 62%),
-             var(--bg);
+  min-height:100vh;
+  background:radial-gradient(900px 520px at 50% -15%, #1c1638 0%, var(--bg) 60%) fixed;
   color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15px; line-height:1.55;
   -webkit-font-smoothing:antialiased;
 }
-button{font-family:inherit;}
-::-webkit-scrollbar{width:9px;height:9px;}
-::-webkit-scrollbar-thumb{background:#232a38;border-radius:6px;}
+button,input,textarea{font-family:inherit;font-size:inherit;}
+.hidden{display:none !important;}
 
+/* ---------- 顶栏 ---------- */
 .topbar{
-  position:sticky;top:0;z-index:120;display:flex;align-items:center;justify-content:space-between;
-  gap:16px;padding:14px 28px;background:rgba(10,13,19,.78);
-  backdrop-filter:blur(16px);border-bottom:1px solid var(--line);
+  position:sticky; top:0; z-index:60;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 16px;
+  background:rgba(10,12,17,.82);
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);
 }
-.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:16px;}
-.logo-icon{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:15px;
-  background:linear-gradient(135deg,var(--red),var(--red2));box-shadow:0 6px 18px rgba(255,59,48,.4);}
-.tabs{display:flex;gap:6px;flex-wrap:wrap;}
-.tab{border:none;background:transparent;color:#98a2b3;padding:9px 15px;border-radius:10px;
-  font-size:14px;font-weight:500;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px;}
-.tab:hover{background:rgba(255,255,255,.06);color:#e6e9ef;}
-.tab.active{background:rgba(255,59,48,.14);color:#ff7a70;}
-.badge{display:none;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;
-  background:var(--red);color:#fff;font-size:11px;font-weight:700;}
-.badge.on{display:inline-grid;}
+.brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:18px;letter-spacing:.5px;}
+.brand .cat{font-size:22px;filter:drop-shadow(0 0 12px rgba(139,92,246,.8));}
+.brand small{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-top:4px;}
+.menu-wrap{position:relative;}
+.icon-btn{
+  width:38px;height:38px;border-radius:12px;border:1px solid var(--line);
+  background:var(--card);color:var(--text);font-size:17px;cursor:pointer;
+  display:grid;place-items:center;transition:.18s;
+}
+.icon-btn:hover{background:#1c2231;border-color:#38455e;}
+.icon-btn:active{transform:scale(.94);}
+.menu-panel{
+  position:absolute;right:0;top:46px;min-width:200px;
+  background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:6px;box-shadow:0 24px 60px rgba(0,0,0,.7);
+  animation:pop .16s ease;
+}
+@keyframes pop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.menu-panel button{
+  display:block;width:100%;text-align:left;padding:10px 12px;border:0;
+  background:transparent;color:var(--text);font-size:14px;border-radius:10px;
+  cursor:pointer;transition:.15s;
+}
+.menu-panel button:hover{background:#1e2534;}
 
-main{max-width:880px;margin:0 auto;padding:44px 22px 100px;}
-.view{display:none;}
-.view.active{display:block;animation:viewIn .35s ease;}
-@keyframes viewIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+/* ---------- 布局 ---------- */
+.container{max-width:700px;margin:0 auto;padding:20px 16px 56px;}
+.tabs{
+  display:flex;gap:6px;background:var(--bg2);border:1px solid var(--line);
+  padding:5px;border-radius:14px;margin-bottom:20px;
+}
+.tabs button{
+  flex:1;padding:11px;border:0;border-radius:10px;background:transparent;
+  color:var(--muted);font-size:14px;font-weight:700;cursor:pointer;transition:.2s;
+}
+.tabs button.active{
+  background:linear-gradient(135deg,#7c5cff,#4f8cff);color:#fff;
+  box-shadow:0 8px 22px rgba(124,92,255,.38);
+}
 
-.hero{text-align:center;margin-bottom:30px;}
-.pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:#9fb0c9;
-  background:rgba(255,255,255,.05);border:1px solid var(--line);padding:6px 14px;
-  border-radius:100px;margin-bottom:20px;}
-.pill i{width:7px;height:7px;border-radius:50%;background:var(--green);display:block;
-  box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:livePulse 1.8s infinite;}
-@keyframes livePulse{70%{box-shadow:0 0 0 8px rgba(34,197,94,0);}100%{box-shadow:0 0 0 0 rgba(34,197,94,0);}}
-h1{font-size:clamp(26px,5vw,40px);margin:0 0 12px;line-height:1.25;letter-spacing:-.5px;}
-.grad{background:linear-gradient(100deg,#ff3b30,#ff8a3d 55%,#ffb020);-webkit-background-clip:text;
-  background-clip:text;color:transparent;}
-.sub{color:var(--muted);font-size:14.5px;margin:0;}
+/* ---------- 子标签（解密区） ---------- */
+.sub-tabs{
+  display:flex;gap:6px;background:var(--bg2);border:1px solid var(--line);
+  padding:5px;border-radius:12px;margin-bottom:16px;
+}
+.sub-tab{
+  flex:1;padding:10px;border:0;border-radius:9px;background:transparent;
+  color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;transition:.2s;
+}
+.sub-tab.active{
+  background:#232b3c;color:var(--text);
+}
+.sub-tab:hover:not(.active){color:#b9c3d6;}
 
-.input-row{display:flex;gap:10px;align-items:center;background:#141822;border:1px solid var(--line);
-  border-radius:15px;padding:8px;margin-top:30px;transition:.25s;}
-.input-row:focus-within{border-color:rgba(255,59,48,.65);box-shadow:0 0 0 4px rgba(255,59,48,.12);}
-.input-row input{flex:1;background:none;border:none;outline:none;color:#fff;font-size:15px;
-  padding:12px 14px;min-width:0;font-family:inherit;}
-.input-row input::placeholder{color:#5b6478;}
-#parseBtn{border:none;border-radius:11px;padding:13px 30px;font-size:15px;font-weight:600;color:#fff;
-  cursor:pointer;white-space:nowrap;background:linear-gradient(135deg,var(--red),var(--red2));
-  box-shadow:0 8px 22px rgba(255,59,48,.35);transition:.22s;}
-#parseBtn:hover{transform:translateY(-1px);}
-#parseBtn:disabled{opacity:.6;cursor:wait;transform:none;}
-.shake{animation:shake .4s;}
-@keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}
-  40%{transform:translateX(8px);}60%{transform:translateX(-5px);}80%{transform:translateX(5px);}}
+/* ---------- 拖拽区 ---------- */
+.drop-zone{
+  border:2px dashed #2b3448;border-radius:var(--radius);background:var(--card);
+  padding:36px 20px;text-align:center;cursor:pointer;transition:.2s;
+}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--accent);background:#1a1f2e;}
+.dz-icon{font-size:34px;margin-bottom:10px;opacity:.9;}
+.dz-title{font-weight:700;font-size:15px;}
+.dz-sub{font-size:12.5px;color:var(--muted);margin-top:5px;letter-spacing:.3px;}
 
-.hint-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px;}
-.hint-chip{font-size:12px;color:#7d8798;background:rgba(255,255,255,.045);border:1px solid var(--line);
-  padding:5px 12px;border-radius:100px;cursor:pointer;transition:.2s;}
-.hint-chip:hover{color:#ff7a70;border-color:rgba(255,59,48,.4);background:rgba(255,59,48,.08);}
+/* ---------- 已选文件 ---------- */
+.file-chip{
+  display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px 14px;
+  background:var(--card);border:1px solid var(--line);border-radius:14px;
+  animation:pop .18s ease;
+}
+.fc-icon{font-size:22px;}
+.fc-meta{flex:1;min-width:0;}
+.fc-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fc-size{font-size:12px;color:var(--muted);margin-top:2px;}
+.fc-x{
+  width:28px;height:28px;border-radius:9px;border:1px solid var(--line);
+  background:transparent;color:var(--muted);cursor:pointer;transition:.15s;flex:none;
+}
+.fc-x:hover{background:#2a1620;color:var(--err);border-color:#4a2230;}
 
-.popover{display:none;margin-top:20px;background:var(--card);border:1px solid var(--line);
-  border-radius:18px;overflow:hidden;box-shadow:0 34px 70px -26px rgba(0,0,0,.85);}
-.popover.show{display:block;animation:popIn .4s cubic-bezier(.2,.9,.3,1.1);}
-@keyframes popIn{from{opacity:0;transform:translateY(-16px) scale(.98);}to{opacity:1;transform:none;}}
-.pop-head{display:flex;align-items:center;gap:9px;padding:12px 16px;font-size:13px;color:#9aa4b5;
-  background:#141924;border-bottom:1px solid var(--line);}
-.pop-head b{color:#fff;}
-.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;
-  box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:livePulse 1.8s infinite;}
-.pop-close{margin-left:auto;background:none;border:none;color:#6b7487;font-size:20px;line-height:1;
-  cursor:pointer;padding:2px 6px;border-radius:6px;}
-.pop-close:hover{background:rgba(255,255,255,.08);color:#fff;}
+/* ---------- 表单 ---------- */
+.field{margin-top:18px;}
+.field-label{font-size:13px;font-weight:700;color:#b9c3d6;margin-bottom:9px;letter-spacing:.3px;}
+.tag{
+  font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;
+  background:#232b3c;color:var(--muted);margin-left:5px;vertical-align:1px;
+}
+.input,.textarea{
+  width:100%;padding:13px 14px;background:var(--card);border:1px solid var(--line);
+  border-radius:13px;color:var(--text);outline:none;transition:.18s;
+}
+.input:focus,.textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(139,92,246,.16);}
+.input::placeholder,.textarea::placeholder{color:#5c6679;}
+.textarea{
+  min-height:140px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12.5px;line-height:1.6;word-break:break-all;
+}
+.hint{font-size:12px;color:var(--muted);margin-top:7px;}
 
-.video-stage{position:relative;aspect-ratio:16/9;background:#0d1117;overflow:hidden;display:grid;place-items:center;}
-.video-stage video{width:100%;height:100%;object-fit:contain;background:#000;display:block;}
-.stage-badge{position:absolute;top:13px;left:14px;z-index:3;padding:4px 10px;border-radius:7px;
-  font-size:11px;color:#fff;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);}
+/* ---------- 模式卡片 ---------- */
+.mode-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:540px){.mode-list{grid-template-columns:1fr;}}
+.mode-card{
+  position:relative;display:block;padding:14px;border:1px solid var(--line);
+  border-radius:14px;background:var(--card);cursor:pointer;transition:.2s;
+}
+.mode-card:hover{border-color:#38455e;}
+.mode-card.active{
+  border-color:var(--accent);
+  background:linear-gradient(180deg,rgba(124,92,255,.15),rgba(124,92,255,.03));
+  box-shadow:0 0 0 1px rgba(124,92,255,.4),0 10px 26px -12px rgba(124,92,255,.7);
+}
+.mode-card input{position:absolute;opacity:0;pointer-events:none;}
+.mode-title{font-weight:800;font-size:14.5px;margin-bottom:5px;}
+.mode-desc{font-size:12px;color:var(--muted);line-height:1.5;}
 
-.pop-body{padding:18px;}
-.v-title{font-size:16px;font-weight:600;line-height:1.45;margin-bottom:8px;word-break:break-all;}
-.v-meta{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
-.v-meta i{font-style:normal;color:#3a4356;}
+/* ---------- 算法卡片 ---------- */
+.algo-list{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+@media(max-width:600px){.algo-list{grid-template-columns:1fr;}}
+.algo-card{
+  position:relative;display:block;padding:12px 13px;border:1px solid var(--line);
+  border-radius:13px;background:var(--card);cursor:pointer;transition:.2s;
+}
+.algo-card:hover{border-color:#38455e;}
+.algo-card.active{
+  border-color:var(--accent);
+  background:linear-gradient(180deg,rgba(124,92,255,.15),rgba(124,92,255,.03));
+  box-shadow:0 0 0 1px rgba(124,92,255,.4),0 8px 22px -12px rgba(124,92,255,.7);
+}
+.algo-card input{position:absolute;opacity:0;pointer-events:none;}
+.algo-title{
+  font-weight:800;font-size:12px;margin-bottom:5px;
+  font-family:ui-monospace,Menlo,Consolas,monospace;
+  letter-spacing:-.2px;line-height:1.35;
+}
+.algo-desc{font-size:11px;color:var(--muted);line-height:1.45;}
 
-.dl-btn{width:100%;margin-top:16px;padding:16px 20px;border:none;border-radius:13px;background:#1e2532;
-  color:#697286;font-size:15.5px;font-weight:600;display:flex;align-items:center;justify-content:center;
-  gap:9px;cursor:not-allowed;transition:all .3s ease;}
-.dl-btn.ready{background:linear-gradient(135deg,#ff3b30,#ff5a2e);color:#fff;cursor:pointer;
-  box-shadow:0 10px 28px rgba(255,59,48,.38);animation:redPulse 2s infinite;}
-.dl-btn.ready:hover{transform:translateY(-2px);box-shadow:0 15px 36px rgba(255,59,48,.52);}
-@keyframes redPulse{0%{box-shadow:0 10px 28px rgba(255,59,48,.38),0 0 0 0 rgba(255,59,48,.5);}
-  70%{box-shadow:0 10px 28px rgba(255,59,48,.38),0 0 0 15px rgba(255,59,48,0);}
-  100%{box-shadow:0 10px 28px rgba(255,59,48,.38),0 0 0 0 rgba(255,59,48,0);}}
+/* ---------- 按钮 ---------- */
+.btn{
+  width:100%;padding:15px;border:0;border-radius:14px;font-size:15px;font-weight:800;
+  cursor:pointer;transition:.2s;margin-top:20px;letter-spacing:.5px;
+  display:block;text-align:center;text-decoration:none;
+}
+.btn-primary{
+  background:linear-gradient(135deg,#7c5cff,#4f8cff);color:#fff;
+  box-shadow:0 12px 30px -8px rgba(124,92,255,.75);
+}
+.btn-primary:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 16px 38px -8px rgba(124,92,255,.9);}
+.btn-primary:not(:disabled):active{transform:translateY(0);}
+.btn-primary:disabled{opacity:.38;cursor:not-allowed;box-shadow:none;}
+.btn-ghost{
+  background:var(--card);border:1px solid var(--line);color:var(--text);margin-top:12px;
+}
+.btn-ghost:hover{background:#1c2231;border-color:#38455e;}
 
-.modal-mask{position:fixed;inset:0;z-index:300;padding:20px;background:rgba(5,7,11,.72);
-  backdrop-filter:blur(7px);display:none;place-items:center;}
-.modal-mask.show{display:grid;animation:fadeIn .2s;}
-@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
-.modal{width:100%;max-width:440px;background:#12161f;border:1px solid var(--line);border-radius:20px;
-  overflow:hidden;box-shadow:0 44px 90px -24px rgba(0,0,0,.9);animation:modalIn .34s cubic-bezier(.2,.9,.3,1.2);}
-@keyframes modalIn{from{opacity:0;transform:translateY(24px) scale(.95);}to{opacity:1;transform:none;}}
-.modal-head{display:flex;align-items:center;gap:10px;padding:18px 20px 14px;font-size:16px;font-weight:700;}
-.modal-head .sub{font-size:12px;color:var(--muted);font-weight:400;margin-left:auto;}
-.modal-head button{background:none;border:none;color:#6b7487;font-size:22px;line-height:1;cursor:pointer;padding:0 4px;}
-.modal-head button:hover{color:#fff;}
-.modal-body{padding:0 20px 6px;max-height:56vh;overflow-y:auto;}
-.q-item{width:100%;display:flex;align-items:center;gap:12px;padding:14px 15px;margin-bottom:9px;
-  background:#171c27;border:1.5px solid transparent;border-radius:13px;color:var(--text);font-size:14px;
-  cursor:pointer;transition:.2s;text-align:left;}
-.q-item:hover{background:#1c2231;}
-.q-item.selected{border-color:var(--red);background:rgba(255,59,48,.1);}
-.q-radio{width:18px;height:18px;border-radius:50%;border:2px solid #3a4356;display:grid;place-items:center;
-  flex-shrink:0;transition:.2s;}
-.q-item.selected .q-radio{border-color:var(--red);}
-.q-item.selected .q-radio::after{content:'';width:9px;height:9px;border-radius:50%;background:var(--red);}
-.q-label{font-weight:600;font-size:15px;}
-.q-tag{font-size:11px;padding:2px 7px;border-radius:5px;background:rgba(255,255,255,.08);color:#98a2b3;}
-.q-item.selected .q-tag{background:rgba(255,59,48,.2);color:#ff8078;}
-.q-rec{font-size:10px;padding:2px 6px;border-radius:4px;color:#fff;background:linear-gradient(135deg,#ff3b30,#ff6b35);}
-.q-size{margin-left:auto;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;}
-.modal-foot{padding:8px 20px 20px;}
-.confirm-btn{width:100%;padding:15px;border:none;border-radius:13px;cursor:pointer;font-size:15.5px;
-  font-weight:600;color:#fff;background:linear-gradient(135deg,#ff3b30,#ff5a2e);
-  box-shadow:0 10px 26px rgba(255,59,48,.35);transition:.22s;}
-.confirm-btn:hover{transform:translateY(-1px);}
+/* ---------- 状态 / 结果 ---------- */
+.status{
+  margin-top:16px;padding:12px 14px;border-radius:13px;font-size:13.5px;
+  background:var(--card);border:1px solid var(--line);color:#b9c3d6;
+  display:flex;align-items:center;gap:10px;
+}
+.status.ok{border-color:#1f4d3a;background:#0f1f1a;color:var(--ok);}
+.status.err{border-color:#4a2230;background:#1f1016;color:var(--err);}
+.spinner{
+  width:15px;height:15px;border:2px solid rgba(139,92,246,.25);
+  border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex:none;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-.thread-row{display:flex;align-items:center;gap:10px;padding:0 20px 14px;font-size:13px;color:var(--muted);}
-.thread-row select{background:#171c27;color:#fff;border:1px solid var(--line);border-radius:8px;
-  padding:7px 10px;font-size:13px;outline:none;font-family:inherit;}
+.result{margin-top:16px;animation:pop .2s ease;}
+.result-card{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px;overflow:hidden;
+}
+.badge{
+  display:inline-block;font-size:11px;font-weight:800;padding:3px 9px;border-radius:7px;
+  background:#232b3c;color:#b9c3d6;margin-right:6px;letter-spacing:.3px;
+}
+.badge.ok{background:#0f2f24;color:var(--ok);}
+.badge.pub{background:#122a44;color:#60a5fa;}
+.badge.prv{background:#2c1a45;color:#c084fc;}
+.badge.algo{background:#1a1a2e;color:#fbbf24;border:1px solid #3a3a1e;}
+.code-box{
+  margin-top:12px;padding:12px;border-radius:12px;background:#0c0f16;
+  border:1px solid var(--line);font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-size:11.5px;line-height:1.6;color:#8ba0c0;word-break:break-all;
+  max-height:170px;overflow:auto;user-select:all;
+}
+.result-info{font-size:12.5px;color:var(--muted);margin-top:12px;line-height:1.9;}
+.result-info b{color:#c3cddd;font-weight:700;}
+.algo-highlight{
+  color:#fbbf24;font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-size:12px;font-weight:700;
+}
+.preview{margin-top:14px;border-radius:12px;overflow:hidden;background:#000;}
+.preview img,.preview video{width:100%;display:block;max-height:60vh;object-fit:contain;}
 
-.panel-head{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
-.panel-head h2{font-size:22px;margin:0;}
-.panel-head .count{font-size:13px;color:var(--muted);}
-.panel-head .clear{margin-left:auto;background:rgba(255,255,255,.05);border:1px solid var(--line);
-  color:#98a2b3;font-size:13px;padding:8px 14px;border-radius:9px;cursor:pointer;transition:.2s;}
-.panel-head .clear:hover{color:#ff7a70;border-color:rgba(255,59,48,.4);}
-
-.task{background:#141924;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;
-  animation:taskIn .38s cubic-bezier(.2,.9,.3,1.1);transition:border-color .3s;}
-@keyframes taskIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
-.task.done{border-color:rgba(34,197,94,.28);}
-.task.error{border-color:rgba(255,59,48,.4);}
-.task-top{display:flex;align-items:center;gap:13px;}
-.task-thumb{width:58px;height:40px;border-radius:9px;flex-shrink:0;
-  background:linear-gradient(135deg,#2b3550,#141a28);display:grid;place-items:center;color:#4d5a75;font-size:13px;}
-.task.done .task-thumb{color:#22c55e;background:linear-gradient(135deg,#12351f,#0f2a19);}
-.task.error .task-thumb{color:#ff5a4a;background:linear-gradient(135deg,#3a1414,#2a0f0f);}
-.task-info{min-width:0;flex:1;}
-.task-name{font-size:14.5px;font-weight:600;margin-bottom:5px;white-space:nowrap;overflow:hidden;
-  text-overflow:ellipsis;}
-.task-sub{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;}
-.q-chip{padding:2px 7px;border-radius:5px;font-size:11px;background:rgba(255,59,48,.15);color:#ff8078;font-weight:600;}
-.task-status{margin-left:auto;font-size:12.5px;font-weight:700;color:#ff6b5e;white-space:nowrap;}
-.task.done .task-status{color:var(--green);}
-.bar{height:6px;border-radius:4px;background:rgba(255,255,255,.07);margin:14px 0 9px;overflow:hidden;}
-.bar-fill{height:100%;width:0;border-radius:4px;transition:width .15s linear;
-  background:linear-gradient(90deg,#ff3b30,#ff8a3d);}
-.task.done .bar-fill{background:linear-gradient(90deg,#16a34a,#4ade80);}
-.task.error .bar-fill{background:#7f1d1d;}
-.task-foot{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);
-  font-variant-numeric:tabular-nums;gap:10px;}
-.export-btn{width:100%;margin-top:14px;padding:12px;border:none;border-radius:11px;
-  background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-size:14.5px;font-weight:600;
-  cursor:pointer;transition:.22s;}
-.export-btn:hover{filter:brightness(1.12);transform:translateY(-1px);}
-
-.empty{text-align:center;padding:70px 20px;color:#4e5769;font-size:14px;}
-.empty .big{font-size:40px;margin-bottom:14px;opacity:.5;}
-
-.sec-title{font-size:16px;margin:38px 0 16px;display:flex;align-items:center;gap:9px;}
-.sec-title::before{content:'';width:4px;height:16px;border-radius:2px;background:linear-gradient(180deg,#ff3b30,#ff8a3d);}
-.about-hero{text-align:center;margin-bottom:34px;}
-.about-hero h2{font-size:26px;margin:0 0 12px;}
-.about-hero p{color:var(--muted);font-size:14.5px;line-height:1.85;max-width:620px;margin:0 auto;}
-.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;}
-.feature{background:#141924;border:1px solid var(--line);border-radius:14px;padding:18px;transition:.25s;}
-.feature:hover{border-color:rgba(255,59,48,.35);transform:translateY(-3px);}
-.feature .ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;
-  background:rgba(255,59,48,.13);font-size:17px;margin-bottom:12px;}
-.feature h4{margin:0 0 7px;font-size:14.5px;}
-.feature p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.7;}
-.faq details{background:#141924;border:1px solid var(--line);border-radius:13px;margin-bottom:10px;overflow:hidden;}
-.faq details[open]{border-color:rgba(255,59,48,.3);}
-.faq summary{padding:16px 18px;cursor:pointer;font-size:14.5px;font-weight:600;list-style:none;
-  display:flex;align-items:center;gap:10px;user-select:none;}
-.faq summary::-webkit-details-marker{display:none;}
-.faq summary::after{content:'+';margin-left:auto;color:#6b7487;font-size:19px;transition:.25s;line-height:1;}
-.faq details[open] summary::after{transform:rotate(45deg);color:#ff7a70;}
-.faq .ans{padding:0 18px 17px;font-size:13.5px;color:#98a2b3;line-height:1.9;}
-.faq .ans b{color:#ff8078;font-weight:600;}
-
-.toast{position:fixed;left:50%;bottom:40px;z-index:600;transform:translate(-50%,24px);opacity:0;
-  pointer-events:none;background:#1c2230;border:1px solid var(--line);color:#fff;padding:13px 22px;
-  border-radius:12px;font-size:14px;box-shadow:0 18px 44px rgba(0,0,0,.65);
-  transition:.32s cubic-bezier(.2,.9,.3,1.2);max-width:90vw;text-align:center;}
-.toast.show{opacity:1;transform:translate(-50%,0);}
-
-@media (max-width:640px){
-  .topbar{padding:12px 16px;}
-  .logo span:last-child{display:none;}
-  main{padding:30px 16px 80px;}
-  .input-row{flex-direction:column;align-items:stretch;}
-  #parseBtn{width:100%;}
+/* ---------- 模态框 ---------- */
+.modal-backdrop{
+  position:fixed;inset:0;z-index:100;background:rgba(4,6,10,.78);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;padding:18px;
+  animation:fade .18s ease;
+}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{
+  width:100%;max-width:560px;max-height:82vh;display:flex;flex-direction:column;
+  background:var(--bg2);border:1px solid var(--line);border-radius:20px;
+  box-shadow:0 40px 100px rgba(0,0,0,.8);animation:pop .2s ease;
+}
+.modal-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 18px;border-bottom:1px solid var(--line);flex:none;
+}
+.modal-head h2{font-size:16.5px;font-weight:800;}
+.modal-body{padding:18px;overflow-y:auto;font-size:14px;line-height:1.75;color:#c3cddd;}
+.modal-body h3{
+  font-size:14px;font-weight:800;color:var(--text);margin:16px 0 7px;
+  padding-left:10px;border-left:3px solid var(--accent);
+}
+.modal-body h3:first-child{margin-top:0;}
+.modal-body p{color:#a4b0c4;font-size:13.5px;margin-bottom:4px;}
+.modal-body ul{margin:6px 0 8px 18px;color:#a4b0c4;font-size:13.5px;}
+.modal-body li{margin-bottom:5px;}
+.modal-body code{
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;
+  background:#0c0f16;padding:2px 6px;border-radius:6px;color:#c084fc;
+}
+.qq-box{
+  display:inline-block;margin-top:6px;padding:10px 16px;border-radius:12px;
+  background:#0c0f16;border:1px solid #3a2f5e;
+  font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-size:18px;font-weight:800;color:#c084fc;letter-spacing:1.5px;
+}
+.footer-note{
+  text-align:center;font-size:12px;color:#5c6679;margin-top:30px;line-height:1.8;
 }
 </style>
 </head>
 <body>
 
 <header class="topbar">
-  <div class="logo">
-    <div class="logo-icon">⚡</div>
-    <span>闪电视频下载器</span>
+  <div class="brand">
+    <span class="cat">🐈‍⬛</span>
+    <span>黑猫</span>
+    <small>Black&nbsp;Cat</small>
   </div>
-  <nav class="tabs">
-    <button class="tab active" data-view="home">下载</button>
-    <button class="tab" data-view="manager">下载管理 <span class="badge" id="taskBadge">0</span></button>
-    <button class="tab" data-view="about">关于网站</button>
-  </nav>
+  <div class="menu-wrap">
+    <button id="menuBtn" class="icon-btn" aria-label="菜单">⋮</button>
+    <div id="menuPanel" class="menu-panel hidden">
+      <button data-act="about">关于网站</button>
+      <button data-act="faq">基础问题</button>
+      <button data-act="device">本机设备码</button>
+      <button data-act="inspirer">关于项目启发者</button>
+    </div>
+  </div>
 </header>
 
-<main>
-  <!-- 首页 -->
-  <section class="view active" id="view-home">
-    <div class="hero">
-      <div class="pill"><i></i> 真·多线程分片下载引擎</div>
-      <h1>粘贴链接，<span class="grad">秒速下载</span>视频</h1>
-      <p class="sub">支持 MP4 / WebM / MOV 直链，以及 HLS(m3u8) 多清晰度流</p>
-    </div>
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" data-tab="enc">🔒 加密</button>
+    <button class="tab" data-tab="dec">🔓 解密</button>
+  </div>
 
-    <div class="input-row" id="inputRow">
-      <input id="urlInput" type="text" placeholder="粘贴视频直链或 m3u8 地址，例如 https://xxx.com/video.mp4" autocomplete="off">
-      <button id="parseBtn">解析</button>
+  <!-- ================= 加密 ================= -->
+  <section id="panel-enc">
+    <div id="dropZone" class="drop-zone">
+      <div class="dz-icon">🗂️</div>
+      <div class="dz-title">点击选择，或拖入照片 / 视频</div>
+      <div class="dz-sub">JPG · PNG · WebP · GIF · MP4 · MOV · WebM</div>
     </div>
+    <input type="file" id="fileInput" accept="image/*,video/*" hidden>
 
-    <div class="hint-row">
-      <span class="hint-chip" data-url="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">示例 MP4（大文件）</span>
-      <span class="hint-chip" data-url="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4">示例 MP4（小文件）</span>
-      <span class="hint-chip" data-url="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8">示例 m3u8（多清晰度）</span>
-    </div>
-
-    <div class="popover" id="popover">
-      <div class="pop-head">
-        <span class="live-dot"></span>
-        <span id="popTitle">已检测到视频资源</span>
-        <button class="pop-close" id="popClose">×</button>
+    <div id="fileChip" class="file-chip hidden">
+      <span class="fc-icon" id="fcIcon">📄</span>
+      <div class="fc-meta">
+        <div class="fc-name" id="fcName">—</div>
+        <div class="fc-size" id="fcSize">—</div>
       </div>
+      <button class="fc-x" id="fcRemove" aria-label="移除">✕</button>
+    </div>
 
-      <div class="video-stage" id="videoStage">
-        <span class="stage-badge" id="stageBadge">检测中…</span>
-        <video id="previewVideo" controls playsinline preload="metadata"></video>
-      </div>
-
-      <div class="pop-body">
-        <div class="v-title" id="vTitle">—</div>
-        <div class="v-meta">
-          <span id="vSource">—</span>
-          <i>·</i>
-          <span id="vDur">—</span>
-          <i>·</i>
-          <span id="vSize">—</span>
-        </div>
-        <button class="dl-btn" id="dlBtn" disabled>
-          <span>⬇</span>
-          <span id="dlText">正在检测视频源…</span>
-        </button>
+    <div class="field">
+      <div class="field-label">加密模式</div>
+      <div class="mode-list">
+        <label class="mode-card active" data-mode="public">
+          <input type="radio" name="encMode" value="public" checked>
+          <div class="mode-title">🌐 公开模式</div>
+          <div class="mode-desc">生成乱码发给朋友，同款网站粘贴即可解密观看</div>
+        </label>
+        <label class="mode-card" data-mode="private">
+          <input type="radio" name="encMode" value="private">
+          <div class="mode-title">🔐 私密模式</div>
+          <div class="mode-desc">严格绑定本设备，换设备 / 换人一律无法解密</div>
+        </label>
       </div>
     </div>
+
+    <div class="field">
+      <div class="field-label">加密算法 <span class="tag">可选</span></div>
+      <div class="algo-list">
+        <label class="algo-card active" data-algo="aes-gcm">
+          <input type="radio" name="encAlgo" value="aes-gcm" checked>
+          <div class="algo-title">AES-256-GCM</div>
+          <div class="algo-desc">认证加密 · 速度与安全兼顾 · 推荐</div>
+        </label>
+        <label class="algo-card" data-algo="aes-cbc">
+          <input type="radio" name="encAlgo" value="aes-cbc">
+          <div class="algo-title">AES-256-CBC + HMAC</div>
+          <div class="algo-desc">经典组合 · 加密后再签名 · 兼容性好</div>
+        </label>
+        <label class="algo-card" data-algo="aes-ctr">
+          <input type="radio" name="encAlgo" value="aes-ctr">
+          <div class="algo-title">AES-256-CTR + HMAC</div>
+          <div class="algo-desc">流式加密 · 适合大文件 · 同样带签名</div>
+        </label>
+      </div>
+      <div class="hint">加密时选哪个算法，解密时就会用同一个算法还原，并在结果里告诉你用的是哪个。</div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">密码 <span class="tag">可选</span></div>
+      <input type="password" id="encPwd" class="input" placeholder="留空则解密时无需密码" autocomplete="new-password">
+      <div class="hint">设置密码后，对方必须先输入正确密码才能解密。</div>
+    </div>
+
+    <button id="encBtn" class="btn btn-primary" disabled>开始加密</button>
+    <div id="encStatus" class="status hidden"></div>
+    <div id="encResult" class="result hidden"></div>
   </section>
 
-  <!-- 下载管理 -->
-  <section class="view" id="view-manager">
-    <div class="panel-head">
-      <h2>下载管理</h2>
-      <span class="count" id="taskCount">0 个任务</span>
-      <button class="clear" id="clearDone">清除已完成</button>
+  <!-- ================= 解密 ================= -->
+  <section id="panel-dec" class="hidden">
+    <div class="sub-tabs">
+      <button class="sub-tab active" data-sub="paste">📋 粘贴乱码</button>
+      <button class="sub-tab" data-sub="file">📥 上传文件</button>
     </div>
-    <div class="task-list" id="taskList">
-      <div class="empty"><div class="big">📥</div>暂无下载任务<br>去首页粘贴链接开始下载吧</div>
+
+    <!-- 粘贴乱码 -->
+    <div id="sub-paste">
+      <div class="field" style="margin-top:0;">
+        <div class="field-label">乱码内容</div>
+        <textarea id="garbled" class="textarea" placeholder="在此粘贴以 HCAT1. 开头的乱码…" spellcheck="false"></textarea>
+        <div class="hint">支持直接粘贴朋友发来的乱码文本，或 .hcat 文件里的全部内容。</div>
+      </div>
     </div>
+
+    <!-- 上传文件 -->
+    <div id="sub-file" class="hidden">
+      <div id="dropZone2" class="drop-zone">
+        <div class="dz-icon">📥</div>
+        <div class="dz-title">点击选择，或拖入 .hcat 文件</div>
+        <div class="dz-sub">支持 .hcat 格式的乱码文件</div>
+      </div>
+      <input type="file" id="fileInput2" accept=".hcat,application/octet-stream" hidden>
+    </div>
+
+    <div class="field">
+      <div class="field-label">密码 <span class="tag">若有</span></div>
+      <input type="password" id="decPwd" class="input" placeholder="未设置密码则留空" autocomplete="off">
+    </div>
+
+    <button id="decBtn" class="btn btn-primary">解密 / 播放</button>
+    <div id="decStatus" class="status hidden"></div>
+    <div id="decResult" class="result hidden"></div>
   </section>
 
-  <!-- 关于 -->
-  <section class="view" id="view-about">
-    <div class="about-hero">
-      <h2>关于本站</h2>
-      <p>这是一个纯前端、真下载的视频工具。它把文件切成多块并发拉取，最后在浏览器内存里合并导出。
-         所有数据都在你的设备上处理，不经过任何服务器。</p>
-    </div>
-
-    <div class="feature-grid">
-      <div class="feature"><div class="ic">⚡</div><h4>真·多线程</h4><p>HTTP Range 分片并发，最多 16 路同时拉取。</p></div>
-      <div class="feature"><div class="ic">🎬</div><h4>m3u8 多清晰度</h4><p>自动解析 HLS 主播放列表，列出所有可用画质。</p></div>
-      <div class="feature"><div class="ic">📊</div><h4>实时进度</h4><p>真实速度、已下载大小，绝不是假动画。</p></div>
-      <div class="feature"><div class="ic">🔒</div><h4>本地处理</h4><p>不经过服务器，不上传任何链接或文件。</p></div>
-    </div>
-
-    <h3 class="sec-title">常见问题</h3>
-    <div class="faq">
-      <details open>
-        <summary>最高支持选择多少分辨率？</summary>
-        <div class="ans">
-          取决于源文件。MP4 直链会读取视频真实分辨率（可能是 <b>4K / 1080P / 720P</b> 等）；
-          m3u8 会把主播放列表里所有清晰度全部列出来，通常最高可达 <b>1080P 甚至 4K</b>，
-          默认自动勾选最高一档。
-        </div>
-      </details>
-
-      <details>
-        <summary>高速下载速度有多快？</summary>
-        <div class="ans">
-          只要源站支持 <b>HTTP Range 分片</b>，就会自动切分成多块并发下载。
-          速度上限取决于你的带宽和源站，实测常见可达 <b>20～80MB/s</b>。
-          源站不支持分片时会自动回退为单线程，速度会慢一些。
-        </div>
-      </details>
-
-      <details>
-        <summary>为什么有些链接解析失败？</summary>
-        <div class="ans">
-          浏览器有 <b>同源策略（CORS）</b>。如果源站没有开放跨域头，前端就无法读取文件内容。
-          这不是程序 bug，而是浏览器的安全限制。绝大多数公开 CDN 和测试视频都支持跨域。
-        </div>
-      </details>
-
-      <details>
-        <summary>能下载 B 站 / YouTube 吗？</summary>
-        <div class="ans">
-          <b>不能直接下载。</b>这些平台的视频流是加密的，且必须携带鉴权信息，
-          纯前端无法解析。要支持它们需要一个后端服务（或本地的 yt-dlp）来解析出真实地址，
-          再把地址交给本工具下载。
-        </div>
-      </details>
-
-      <details>
-        <summary>下载完成后文件保存在哪里？</summary>
-        <div class="ans">
-          点击 <b>「导出到本地」</b> 后，浏览器会直接把文件保存到你的默认下载目录，
-          文件名形如「视频名_1080P.mp4」。
-        </div>
-      </details>
-    </div>
-  </section>
-</main>
-
-<!-- 画质弹层 -->
-<div class="modal-mask" id="qualityModal">
-  <div class="modal">
-    <div class="modal-head">
-      选择下载画质
-      <span class="sub" id="qualitySizeHint"></span>
-      <button id="modalClose">×</button>
-    </div>
-    <div class="modal-body" id="qualityList"></div>
-    <div class="thread-row">
-      并发线程数
-      <select id="threadSelect">
-        <option value="4">4 线程</option>
-        <option value="8" selected>8 线程（推荐）</option>
-        <option value="16">16 线程（激进）</option>
-      </select>
-    </div>
-    <div class="modal-foot">
-      <button class="confirm-btn" id="confirmDownload">开始高速下载</button>
-    </div>
+  <div class="footer-note">
+    🔒 全部运算在你的浏览器本地完成<br>文件与密码不会上传到任何服务器
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div id="modal" class="modal-backdrop hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modalTitle"></h2>
+      <button id="modalClose" class="icon-btn" aria-label="关闭">✕</button>
+    </div>
+    <div id="modalBody" class="modal-body"></div>
+  </div>
+</div>
 
 <script>
-/* ==================== 工具 ==================== */
+(function(){
+'use strict';
+
+/* =========================================================
+   常量
+   ========================================================= */
+const SITE_KEY = 'HEIMAO::BLACKCAT::AES-256-GCM::v2::2024::SEAL';
+const SITE_ID  = 'HCAT-7F3A';
+const ITER     = 150000;
+const HEADER   = 64;
+const PREFIX   = 'HCAT1.';
+const MAX_INLINE = 900000;
+const MAX_B64    = 80 * 1024 * 1024;
+
+/* ---------- 加密算法定义 ---------- */
+const ALGOS = {
+  'aes-gcm': {
+    id: 1,
+    name: 'AES-256-GCM',
+    keyBundleLen: 32,
+    ivLen: 12
+  },
+  'aes-cbc': {
+    id: 2,
+    name: 'AES-256-CBC + HMAC-SHA256',
+    keyBundleLen: 64,
+    ivLen: 16
+  },
+  'aes-ctr': {
+    id: 3,
+    name: 'AES-256-CTR + HMAC-SHA256',
+    keyBundleLen: 64,
+    ivLen: 16
+  }
+};
+const ALGO_BY_ID = {1:'aes-gcm', 2:'aes-cbc', 3:'aes-ctr'};
+
+/* =========================================================
+   小工具
+   ========================================================= */
 const $ = s => document.querySelector(s);
-const $$ = s => document.querySelectorAll(s);
-const esc = s => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
-function toast(msg, ms = 2600){
-  const t = $('#toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.remove('show'), ms);
+function randHex(n){
+  const b = crypto.getRandomValues(new Uint8Array(Math.ceil(n/2)));
+  let s = '';
+  for(const x of b) s += x.toString(16).padStart(2,'0');
+  return s.slice(0,n);
 }
-function fmtSize(bytes){
-  if(!bytes || bytes <= 0) return '未知';
-  const u = ['B','KB','MB','GB'];
-  let i = 0, n = bytes;
-  while(n >= 1024 && i < u.length - 1){ n /= 1024; i++; }
-  return n.toFixed(i === 0 ? 0 : 1) + ' ' + u[i];
+async function sha256Hex(str){
+  const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('');
 }
-function fmtSpeed(bps){
-  if(!bps || bps <= 0) return '0 B/s';
-  return fmtSize(bps) + '/s';
+function fmtSize(b){
+  if(b < 1024) return b + ' B';
+  if(b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  if(b < 1073741824) return (b/1048576).toFixed(2) + ' MB';
+  return (b/1073741824).toFixed(2) + ' GB';
 }
-function fmtTime(sec){
-  if(!isFinite(sec) || sec <= 0) return '00:00';
-  sec = Math.floor(sec);
-  const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
-  const p = n => String(n).padStart(2,'0');
-  return h > 0 ? `${h}:${p(m)}:${p(s)}` : `${p(m)}:${p(s)}`;
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function concatBytes(){
+  let total = 0;
+  for(let i=0;i<arguments.length;i++) total += arguments[i].length;
+  const out = new Uint8Array(total);
+  let off = 0;
+  for(let i=0;i<arguments.length;i++){ out.set(arguments[i], off); off += arguments[i].length; }
+  return out;
 }
 
-/* ==================== 视图 ==================== */
-function switchView(name){
-  $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
-  $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.view === name));
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-$$('.tab').forEach(t => t.addEventListener('click', () => switchView(t.dataset.view)));
-
-/* ==================== 状态 ==================== */
-let current = null;      // 当前解析结果
-let tasks = [];          // 下载任务
-
-/* ==================== 输入 ==================== */
-const urlInput = $('#urlInput');
-const parseBtn = $('#parseBtn');
-
-$$('.hint-chip').forEach(c => c.addEventListener('click', () => {
-  urlInput.value = c.dataset.url;
-  urlInput.focus();
-}));
-urlInput.addEventListener('keydown', e => { if(e.key === 'Enter') parseBtn.click(); });
-
-parseBtn.addEventListener('click', () => {
-  const url = urlInput.value.trim();
-  if(!url){
-    $('#inputRow').classList.add('shake');
-    setTimeout(() => $('#inputRow').classList.remove('shake'), 420);
-    toast('请先粘贴视频链接');
-    return;
+/* ---------- base64url ---------- */
+async function bytesToB64url(bytes){
+  let s = '', chunk = 0x8000;
+  for(let i=0;i<bytes.length;i+=chunk){
+    s += String.fromCharCode.apply(null, bytes.subarray(i, i+chunk));
+    if(i % (chunk*8) === 0) await new Promise(r=>setTimeout(r,0));
   }
-  if(!/^https?:\/\//i.test(url)){
-    toast('链接需以 http:// 或 https:// 开头');
-    return;
-  }
-  doParse(url);
-});
+  return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function b64urlToBytes(str){
+  let s = str.replace(/-/g,'+').replace(/_/g,'/').replace(/\s/g,'');
+  while(s.length % 4) s += '=';
+  const bin = atob(s);
+  const out = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
 
-/* ==================== 解析 ==================== */
-async function doParse(url){
-  parseBtn.disabled = true;
-  parseBtn.textContent = '解析中…';
-
-  resetPopover();
-  $('#popover').classList.add('show');
-  $('#vTitle').textContent = '正在分析…';
-  $('#vSource').textContent = (() => { try { return new URL(url).hostname; } catch(e){ return '未知来源'; } })();
-  $('#vDur').textContent = '—';
-  $('#vSize').textContent = '—';
-  $('#stageBadge').textContent = '检测中…';
-
-  const isM3U8 = /\.m3u8(\?|$)/i.test(url) || /m3u8/i.test(url);
-
+/* =========================================================
+   设备指纹
+   ========================================================= */
+let _deviceId = null;
+async function getDeviceId(){
+  if(_deviceId) return _deviceId;
+  let uuid = '';
   try{
-    if(isM3U8){
-      current = await parseM3U8(url);
-    }else{
-      current = await parseDirect(url);
+    uuid = localStorage.getItem('hemao_device_uuid') || '';
+    if(!uuid){
+      uuid = (crypto.randomUUID ? crypto.randomUUID() : randHex(32));
+      localStorage.setItem('hemao_device_uuid', uuid);
     }
-    renderPopover();
-  }catch(err){
-    console.error(err);
-    current = null;
-    $('#vTitle').textContent = '解析失败';
-    $('#vDur').textContent = '—';
-    $('#vSize').textContent = '—';
-    $('#stageBadge').textContent = '不可用';
-    $('#dlText').textContent = '无法读取该视频（可能是跨域限制）';
-    toast('解析失败：' + (err.message || '未知错误'), 4000);
-  }finally{
-    parseBtn.disabled = false;
-    parseBtn.textContent = '解析';
-  }
-}
-
-/* ---- 直链 MP4/WebM 解析 ---- */
-async function parseDirect(url){
-  // 1. 用 video 元素拿元数据（不依赖 CORS）
-  const meta = await new Promise((resolve) => {
-    const v = document.createElement('video');
-    v.preload = 'metadata';
-    v.muted = true;
-    const done = (ok) => { v.removeAttribute('src'); v.load(); resolve(ok); };
-    v.onloadedmetadata = () => resolve({
-      duration: v.duration,
-      width: v.videoWidth,
-      height: v.videoHeight
-    });
-    v.onerror = () => resolve(null);
-    setTimeout(() => resolve(null), 8000);
-    v.src = url;
-  });
-
-  // 2. 用 Range 探测真实大小 + 是否支持分片（依赖 CORS）
-  let size = 0, ranges = false, type = '';
-  let corsBlocked = false;
-  try{
-    const res = await fetch(url, { headers: { Range: 'bytes=0-1' } });
-    type = res.headers.get('Content-Type') || '';
-    const cr = res.headers.get('Content-Range'); // bytes 0-1/123456
-    if(res.status === 206 && cr && cr.includes('/')){
-      size = parseInt(cr.split('/')[1], 10) || 0;
-      ranges = true;
-    }else{
-      size = parseInt(res.headers.get('Content-Length'), 10) || 0;
-      ranges = false;
-    }
-    // 取消 body
-    try{ res.body && res.body.cancel(); }catch(e){}
   }catch(e){
-    corsBlocked = true;
+    uuid = 'no-storage';
   }
-
-  if(!meta && corsBlocked) throw new Error('无法访问该地址（CORS 或链接无效）');
-  if(!meta && !size) throw new Error('无法识别视频格式');
-
-  return {
-    kind: 'direct',
-    url,
-    title: filenameFromUrl(url) || 'video',
-    duration: meta ? meta.duration : 0,
-    width: meta ? meta.width : 0,
-    height: meta ? meta.height : 0,
-    size,
-    ranges,
-    mime: type || 'video/mp4',
-    corsBlocked
-  };
+  const fp = [
+    navigator.userAgent || '',
+    navigator.language || '',
+    navigator.hardwareConcurrency || 0,
+    (screen.width||0) + 'x' + (screen.height||0) + 'x' + (screen.colorDepth||0),
+    (Intl.DateTimeFormat().resolvedOptions().timeZone) || '',
+    uuid
+  ].join('|');
+  _deviceId = await sha256Hex('HEIMAO-DEVICE::' + fp);
+  return _deviceId;
 }
 
-/* ---- m3u8 解析 ---- */
-async function parseM3U8(url){
-  const res = await fetch(url);
-  if(!res.ok) throw new Error('m3u8 请求失败 ' + res.status);
-  const text = await res.text();
+/* =========================================================
+   密钥派生
+   ========================================================= */
+async function deriveKEK(secret, salt){
+  const base = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(secret),
+    'PBKDF2', false, ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    { name:'PBKDF2', salt, iterations:ITER, hash:'SHA-256' },
+    base,
+    { name:'AES-GCM', length:256 },
+    false,
+    ['encrypt','decrypt']
+  );
+}
 
-  if(text.includes('#EXT-X-STREAM-INF')){
-    // master playlist：多清晰度
-    const lines = text.split(/\r?\n/);
-    const variants = [];
-    for(let i = 0; i < lines.length; i++){
-      const line = lines[i].trim();
-      if(line.startsWith('#EXT-X-STREAM-INF')){
-        const resM = line.match(/RESOLUTION=(\d+)x(\d+)/i);
-        const bwM  = line.match(/BANDWIDTH=(\d+)/i);
-        // 找到下一行非注释行
-        let j = i + 1;
-        while(j < lines.length && (!lines[j].trim() || lines[j].trim().startsWith('#'))) j++;
-        const target = lines[j] && lines[j].trim();
-        if(target && !target.startsWith('#')){
-          variants.push({
-            url: new URL(target, url).href,
-            width:  resM ? parseInt(resM[1],10) : 0,
-            height: resM ? parseInt(resM[2],10) : 0,
-            bandwidth: bwM ? parseInt(bwM[1],10) : 0
-          });
-        }
+/* =========================================================
+   加密
+   ========================================================= */
+async function doEncrypt(file, mode, password, algoKey, setStatus){
+  const algo = ALGOS[algoKey];
+  if(!algo) throw new Error('未知的加密算法。');
+
+  setStatus('读取文件…');
+  const plain = new Uint8Array(await file.arrayBuffer());
+
+  const salt   = crypto.getRandomValues(new Uint8Array(16));
+  const iv     = crypto.getRandomValues(new Uint8Array(16));
+  const wrapIv = crypto.getRandomValues(new Uint8Array(12));
+
+  const dataKey  = crypto.getRandomValues(new Uint8Array(32));
+  let hmacKeyRaw = null;
+  let keyBundle;
+  if(algo.keyBundleLen === 32){
+    keyBundle = dataKey;
+  }else{
+    hmacKeyRaw = crypto.getRandomValues(new Uint8Array(32));
+    keyBundle = concatBytes(dataKey, hmacKeyRaw);
+  }
+
+  setStatus('派生密钥中…');
+  const parts = [SITE_KEY];
+  if(mode === 'private') parts.push('DEV:' + await getDeviceId());
+  if(password) parts.push('PWD:' + password);
+  const kek = await deriveKEK(parts.join('|'), salt);
+
+  setStatus('加密数据中…');
+  let ciphertext;
+
+  if(algoKey === 'aes-gcm'){
+    const k = await crypto.subtle.importKey('raw', dataKey, 'AES-GCM', false, ['encrypt']);
+    ciphertext = new Uint8Array(await crypto.subtle.encrypt(
+      { name:'AES-GCM', iv: iv.subarray(0, 12) }, k, plain
+    ));
+  }
+  else if(algoKey === 'aes-cbc'){
+    const k = await crypto.subtle.importKey('raw', dataKey, 'AES-CBC', false, ['encrypt']);
+    const raw = new Uint8Array(await crypto.subtle.encrypt(
+      { name:'AES-CBC', iv }, k, plain
+    ));
+    const hk = await crypto.subtle.importKey(
+      'raw', hmacKeyRaw, { name:'HMAC', hash:'SHA-256' }, false, ['sign']
+    );
+    const mac = new Uint8Array(await crypto.subtle.sign(
+      'HMAC', hk, concatBytes(iv, raw)
+    ));
+    ciphertext = concatBytes(mac, raw);
+  }
+  else if(algoKey === 'aes-ctr'){
+    const k = await crypto.subtle.importKey('raw', dataKey, 'AES-CTR', false, ['encrypt']);
+    const raw = new Uint8Array(await crypto.subtle.encrypt(
+      { name:'AES-CTR', counter: iv, length: 64 }, k, plain
+    ));
+    const hk = await crypto.subtle.importKey(
+      'raw', hmacKeyRaw, { name:'HMAC', hash:'SHA-256' }, false, ['sign']
+    );
+    const mac = new Uint8Array(await crypto.subtle.sign(
+      'HMAC', hk, concatBytes(iv, raw)
+    ));
+    ciphertext = concatBytes(mac, raw);
+  }
+
+  const wrappedKey = new Uint8Array(await crypto.subtle.encrypt(
+    { name:'AES-GCM', iv: wrapIv }, kek, keyBundle
+  ));
+
+  const meta = {
+    n : file.name,
+    t : file.type || 'application/octet-stream',
+    s : file.size,
+    m : mode,
+    a : algoKey,
+    aName : algo.name,
+    p : !!password,
+    id: SITE_ID + '-' + randHex(6).toUpperCase(),
+    ts: Date.now()
+  };
+  const metaBytes = new TextEncoder().encode(JSON.stringify(meta));
+
+  const total = HEADER + wrappedKey.length + metaBytes.length + ciphertext.length;
+  const out = new Uint8Array(total);
+  const dv  = new DataView(out.buffer);
+
+  out.set([0x48,0x43,0x41,0x54], 0);
+  out[4] = 2;
+  out[5] = mode === 'private' ? 1 : 0;
+  out[6] = algo.id;
+  out[7] = password ? 1 : 0;
+  out.set(salt, 8);
+  out.set(iv, 24);
+  out.set(wrapIv, 40);
+  dv.setUint32(52, wrappedKey.length);
+  dv.setUint32(56, metaBytes.length);
+
+  out.set(wrappedKey, HEADER);
+  out.set(metaBytes, HEADER + wrappedKey.length);
+  out.set(ciphertext, HEADER + wrappedKey.length + metaBytes.length);
+
+  return { bytes: out, meta };
+}
+
+/* =========================================================
+   解密
+   ========================================================= */
+async function doDecrypt(bytes, password){
+  if(!bytes || bytes.length < HEADER) throw new Error('乱码内容不完整或格式错误。');
+  if(!(bytes[0]===0x48 && bytes[1]===0x43 && bytes[2]===0x41 && bytes[3]===0x54)){
+    throw new Error('这不是黑猫生成的乱码，无法识别。');
+  }
+
+  const version = bytes[4];
+  if(version !== 2){
+    throw new Error('不支持的乱码版本（v' + version + '），请使用对应版本的黑猫解密。');
+  }
+
+  const mode   = bytes[5] === 1 ? 'private' : 'public';
+  const algoId = bytes[6];
+  const flags  = bytes[7];
+  const hasPwd = !!(flags & 1);
+
+  const algoKey = ALGO_BY_ID[algoId];
+  if(!algoKey) throw new Error('不支持的加密算法（id=' + algoId + '）。');
+  const algo = ALGOS[algoKey];
+
+  const salt   = bytes.subarray(8, 24);
+  const iv     = bytes.subarray(24, 40);
+  const wrapIv = bytes.subarray(40, 52);
+
+  const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const wkLen   = dv.getUint32(52);
+  const metaLen = dv.getUint32(56);
+
+  const metaStart = HEADER + wkLen;
+  const ctStart   = metaStart + metaLen;
+
+  const wrappedKey = bytes.subarray(HEADER, metaStart);
+  const meta       = JSON.parse(new TextDecoder().decode(bytes.subarray(metaStart, ctStart)));
+  const ciphertext = bytes.subarray(ctStart);
+
+  if(hasPwd && !password){
+    const e = new Error('该乱码已设置密码，请输入密码后再解密。');
+    e.code = 'NEED_PWD';
+    throw e;
+  }
+
+  const parts = [SITE_KEY];
+  if(mode === 'private') parts.push('DEV:' + await getDeviceId());
+  if(password) parts.push('PWD:' + password);
+  const kek = await deriveKEK(parts.join('|'), salt);
+
+  let keyBundle;
+  try{
+    keyBundle = new Uint8Array(await crypto.subtle.decrypt(
+      { name:'AES-GCM', iv: wrapIv }, kek, wrappedKey
+    ));
+  }catch(err){
+    const e = new Error('解密失败');
+    if(mode === 'private'){
+      e.message = '解密失败：这段乱码绑定的是另一台设备，或密码不正确。';
+      e.code = 'DEVICE';
+    }else if(hasPwd){
+      e.message = '密码错误，请重新输入。';
+      e.code = 'PWD';
+    }else{
+      e.message = '解密失败：密钥不匹配，这段乱码可能已被篡改。';
+      e.code = 'KEY';
+    }
+    throw e;
+  }
+
+  let plain;
+  if(algoKey === 'aes-gcm'){
+    const k = await crypto.subtle.importKey('raw', keyBundle, 'AES-GCM', false, ['decrypt']);
+    try{
+      plain = new Uint8Array(await crypto.subtle.decrypt(
+        { name:'AES-GCM', iv: iv.subarray(0, 12) }, k, ciphertext
+      ));
+    }catch(err){
+      throw new Error('数据校验失败，文件可能已损坏或被篡改。');
+    }
+  }
+  else if(algoKey === 'aes-cbc' || algoKey === 'aes-ctr'){
+    const dataKey  = keyBundle.subarray(0, 32);
+    const hmacKey  = keyBundle.subarray(32, 64);
+    const mac      = ciphertext.subarray(0, 32);
+    const raw      = ciphertext.subarray(32);
+
+    const hk = await crypto.subtle.importKey(
+      'raw', hmacKey, { name:'HMAC', hash:'SHA-256' }, false, ['verify']
+    );
+    const ok = await crypto.subtle.verify(
+      'HMAC', hk, mac, concatBytes(iv, raw)
+    );
+    if(!ok){
+      throw new Error('数据签名校验失败：文件可能已被篡改。');
+    }
+
+    if(algoKey === 'aes-cbc'){
+      const k = await crypto.subtle.importKey('raw', dataKey, 'AES-CBC', false, ['decrypt']);
+      try{
+        plain = new Uint8Array(await crypto.subtle.decrypt(
+          { name:'AES-CBC', iv }, k, raw
+        ));
+      }catch(err){
+        throw new Error('数据解密失败，文件可能已损坏。');
+      }
+    }else{
+      const k = await crypto.subtle.importKey('raw', dataKey, 'AES-CTR', false, ['decrypt']);
+      try{
+        plain = new Uint8Array(await crypto.subtle.decrypt(
+          { name:'AES-CTR', counter: iv, length: 64 }, k, raw
+        ));
+      }catch(err){
+        throw new Error('数据解密失败，文件可能已损坏。');
       }
     }
-    if(!variants.length) throw new Error('m3u8 中没有找到可用画质');
-    variants.sort((a,b) => (b.height - a.height) || (b.bandwidth - a.bandwidth));
-
-    return {
-      kind: 'hls-master',
-      url,
-      title: filenameFromUrl(url) || 'HLS 视频',
-      variants
-    };
   }
 
-  // media playlist：单一清晰度
-  const segments = resolveSegments(text, url);
-  if(!segments.length) throw new Error('m3u8 中没有找到分片');
-  return {
-    kind: 'hls-media',
-    url,
-    title: filenameFromUrl(url) || 'HLS 视频',
-    segments
-  };
+  return { plain, meta };
 }
 
-function resolveSegments(text, baseUrl){
-  const base = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
-  return text.split(/\r?\n/)
-    .map(l => l.trim())
-    .filter(l => l && !l.startsWith('#'))
-    .map(l => { try { return new URL(l, base).href; } catch(e){ return null; } })
-    .filter(Boolean);
+/* =========================================================
+   界面逻辑
+   ========================================================= */
+const menuBtn   = $('#menuBtn');
+const menuPanel = $('#menuPanel');
+const modal     = $('#modal');
+
+/* ---------- 顶部菜单 ---------- */
+menuBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  menuPanel.classList.toggle('hidden');
+});
+document.addEventListener('click', () => menuPanel.classList.add('hidden'));
+menuPanel.addEventListener('click', e => e.stopPropagation());
+
+menuPanel.addEventListener('click', async e => {
+  const btn = e.target.closest('button[data-act]');
+  if(!btn) return;
+  menuPanel.classList.add('hidden');
+  const act = btn.dataset.act;
+
+  if(act === 'about'){
+    openModal('关于网站', `
+      <h3>🐈‍⬛ 黑猫 · Black Cat</h3>
+      <p>一个完全运行在浏览器本地的文件加密工具。<br>
+      你的照片和视频不会离开这台设备，加密过程在内存中完成，关闭页面即消失。</p>
+      <h3>技术规格</h3>
+      <p>• 数据加密：<code>AES-256-GCM</code> / <code>AES-256-CBC + HMAC-SHA256</code> / <code>AES-256-CTR + HMAC-SHA256</code>（可自选）<br>
+         • 密钥派生：<code>PBKDF2-HMAC-SHA256</code>，15 万次迭代<br>
+         • 数据密钥：每次加密随机生成 256 位<br>
+         • 运行方式：纯前端本地运算，零上传、零留存</p>
+      <h3>网站识别码</h3>
+      <p>本网站识别码为 <code>${SITE_ID}</code>，由它参与派生的密钥体系是黑猫独有的。
+      只有黑猫能生成和还原对应的乱码。</p>
+      <h3>版本</h3>
+      <p>v2.0 · 多算法本地离线版</p>
+    `);
+  }
+
+  if(act === 'faq'){
+    openModal('基础问题', `
+      <h3>1. 本网站使用的是什么加密技术？</h3>
+      <p>网站支持三种主流加密算法，加密时可自选：</p>
+      <ul>
+        <li><code>AES-256-GCM</code>：认证加密，速度与安全兼顾</li>
+        <li><code>AES-256-CBC + HMAC-SHA256</code>：经典组合，加密后再签名</li>
+        <li><code>AES-256-CTR + HMAC-SHA256</code>：流式加密，适合大文件</li>
+      </ul>
+      <p>三者都使用 <code>PBKDF2-HMAC-SHA256</code>（15 万次迭代）派生密钥。
+      加密时选哪个，解密时就用哪个还原，结果里会明确告诉你用的是哪一种。</p>
+
+      <h3>2. 支持加密什么东西？</h3>
+      <p>照片（JPG / PNG / WebP / GIF 等）和视频（MP4 / MOV / WebM 等）。
+      底层其实对任意二进制数据都有效，目前界面只开放图片与视频入口。</p>
+
+      <h3>3. 公开模式和私密模式有什么区别？</h3>
+      <p><b>公开模式</b>：密钥由网站标识派生。任何人拿到乱码，用同款网站粘贴就能解密播放。
+      如果额外设置了密码，则必须输入正确密码才能解开。</p>
+      <p><b>私密模式</b>：密钥在网站标识之外，额外绑定了本机的设备指纹。
+      即使别人拿到了乱码、拿到了密码，只要不是在这台设备上，就一律解不开。</p>
+
+      <h3>4. 为什么乱码里有网站识别码？有什么用？</h3>
+      <p>识别码形如 <code>HCAT-7F3A-XXXXXX</code>。它标记了这段乱码由黑猫生成，
+      并且和密钥体系同源。作用有两个：一是让你一眼分辨出这是黑猫的乱码，
+      二是方便区分不同文件对应的乱码。识别码本身不包含任何原始内容信息。</p>
+
+      <h3>5. 为什么只有本网站能解密，其他工具不行？</h3>
+      <p>解密需要同时满足四个条件：正确的网站标识密钥、正确的模式、正确的密码（如有）、
+      正确的设备（私密模式）。缺少任意一项，认证解密都会直接失败，
+      得到的只有一堆无意义的乱码。第三方工具没有这套密钥体系，自然解不开。</p>
+
+      <h3>6. 为什么我把加密后的视频照片发给朋友，他还能看？文件到底变没变？</h3>
+      <p>一句话：<b>文件内容没变，只是被"打乱"了；你发出去的是一串乱码，朋友用同款网站把它"还原"回来。</b></p>
+      <p>
+        <b>① 文件本身没变。</b>照片还是那些像素，视频还是那些画面。加密不是把照片换成别的东西，
+        而是把文件的每一个字节，用 AES 算法和密钥"打乱"成一串看不懂的数据。
+      </p>
+      <p>
+        <b>② 你发出去的不是原文件，是乱码。</b>你把加密后那串 <code>HCAT1.xxxxx...</code> 发给朋友，
+        微信 / QQ / 邮件里显示的也是一堆乱码。朋友直接打开是打不开的。
+      </p>
+      <p>
+        <b>③ 乱码里自带"还原材料"。</b>这串乱码里打包了：随机盐、IV、被包裹的数据密钥、
+        文件名和类型、真正的密文。除了网站内置的固定密钥以外，还原所需的其他东西都在乱码里。
+      </p>
+      <p>
+        <b>④ 朋友用同款网站"还原"。</b>朋友打开黑猫，把乱码粘贴进去，网站用内置的固定密钥
+        + 乱码里的材料，在他自己的浏览器本地，把乱码重新拼回原来的照片 / 视频。
+        这一过程和他人在哪里、用什么网络完全无关。
+      </p>
+      <p>
+        <b>⑤ 两种说法都对：</b>"文件没变"指原始内容还在，只是被加密了；
+        "要把它加到网站里"指朋友必须用同款网站才能把乱码还原。
+      </p>
+      <p style="color:#fbbf24;">
+        ⚠️ 公开模式里网站内置密钥是共用的。只要别人有同款网站，也能解开你发的乱码。
+        所以敏感内容建议设密码，或用私密模式。
+      </p>
+
+      <h3>7. 介绍一下这三种加密算法的区别？</h3>
+      <p><b>① AES-256-GCM（推荐）</b><br>
+      密钥长度 256 位，GCM 模式自带认证标签。<br>
+      特点：加密和校验一步到位，速度快，实现简洁，是现代 TLS 的标准选择。<br>
+      适合：绝大多数场景，尤其是普通照片和短视频。</p>
+      <p><b>② AES-256-CBC + HMAC-SHA256</b><br>
+      密钥长度 256 位，CBC 分组模式，再用 HMAC-SHA256 对密文做一次签名。<br>
+      特点：先加密、再签名，是历史上非常经典的组合，被大量旧系统采用。<br>
+      适合：需要和旧系统对接，或者你更偏好"加密 + 签名"分离结构的场景。</p>
+      <p><b>③ AES-256-CTR + HMAC-SHA256</b><br>
+      密钥长度 256 位，CTR 流式模式，再用 HMAC-SHA256 签名。<br>
+      特点：流式加密，不需要填充，处理超大文件时更平滑。<br>
+      适合：体积较大的视频文件，或者需要边读边加密的场景。</p>
+      <p style="color:#fbbf24;">⚠️ 三种算法都使用同一个 KEK 包裹密钥，所以加密模式（公开 / 私密）、密码
+      在所有算法下都通用。你只需要在选择时挑一个，解密端会自动识别。</p>
+
+      <h3>8. 加密是真的吗？会不会是注水加密？</h3>
+      <p><b>先直接回答：黑猫是真加密，不是注水。</b></p>
+      <p>所谓"注水加密"，常见套路有这几种：</p>
+      <ul>
+        <li>只做 Base64 编码，看起来是乱码，其实可以一键还原</li>
+        <li>只把文件头改几个字节，内容完全没动</li>
+        <li>异或一个固定字节，像加密，实际谁都能逆推</li>
+        <li>根本没加密，只是把文件名改了</li>
+      </ul>
+      <p><b>黑猫不是这些。你可以自己验证：</b></p>
+      <p>
+        <b>验证一：同一个文件加密两次，乱码完全不一样。</b><br>
+        因为每次的盐、IV、数据密钥都是随机的。如果只是 Base64 或简单异或，两次结果一定相同。
+      </p>
+      <p>
+        <b>验证二：加密后的体积会变化。</b><br>
+        AES 密文和原文长度相近，但会额外多出头部、被包裹的密钥、元数据、GCM 认证标签。
+        如果只是"改了文件头"，体积不会多出这些结构。
+      </p>
+      <p>
+        <b>验证三：用文本编辑器打开 .hcat 文件。</b><br>
+        你会看到以 <code>HCAT</code> 开头的二进制结构：后面跟着盐、IV、被包裹的密钥、元数据、
+        然后是密文。原始照片的像素内容完全不可见。
+      </p>
+      <p>
+        <b>验证四：断网也能用。</b><br>
+        打开黑猫后断开网络，加密、解密、播放全部照常。说明没有任何数据被上传。
+      </p>
+      <p>
+        <b>验证五：算法是浏览器原生实现的。</b><br>
+        黑猫直接调用浏览器内置的 <code>crypto.subtle</code>（Web Crypto API），
+        这是各大浏览器厂商遵循 W3C 标准实现的原生加密接口，不是自己手写的土制算法。
+      </p>
+      <p style="color:#34d399;">
+        ✅ 总结：黑猫是真加密。你选 AES-256-GCM 就真的用 GCM，你选 CBC + HMAC 就真的用 CBC + HMAC，
+        不存在"显示一个、实际用另一个"的情况。解密结果里也会明确告诉你这次用的是哪一种。
+      </p>
+    `);
+  }
+
+  if(act === 'device'){
+    const id = await getDeviceId();
+    openModal('本机设备码', `
+      <h3>你的设备指纹</h3>
+      <p style="word-break:break-all;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:#c084fc;background:#0c0f16;padding:12px;border-radius:10px;margin-top:8px;">${id}</p>
+      <h3>它用来做什么？</h3>
+      <p>私密模式加密时，会把这段指纹混入密钥派生过程。<br>
+      只有在本设备、本浏览器上，这段指纹才会一致，乱码才能被还原。</p>
+      <h3>注意事项</h3>
+      <p>清除浏览器数据、更换设备、重装系统或更换浏览器，都会导致指纹变化，
+      届时私密模式的文件将无法再解密，请务必提前备份原始文件。</p>
+    `);
+  }
+
+  if(act === 'inspirer'){
+    openModal('关于项目启发者', `
+      <h3>🐈‍⬛ 感谢</h3>
+      <p>黑猫项目的灵感，来自一位朋友的想法和支持。</p>
+      <p>如果你有建议、反馈，或者只是想聊聊，欢迎加 QQ：</p>
+      <p style="text-align:center;margin-top:10px;"><span class="qq-box">3647677118</span></p>
+      <p style="color:#8a94a8;font-size:12.5px;margin-top:16px;">
+        没有这位启发者，就没有今天的黑猫。
+      </p>
+    `);
+  }
+});
+
+/* ---------- 模态框 ---------- */
+function openModal(title, html){
+  $('#modalTitle').textContent = title;
+  $('#modalBody').innerHTML = html;
+  modal.classList.remove('hidden');
+}
+$('#modalClose').addEventListener('click', () => modal.classList.add('hidden'));
+modal.addEventListener('click', e => { if(e.target === modal) modal.classList.add('hidden'); });
+
+/* ---------- 主 Tab 切换 ---------- */
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const isEnc = tab.dataset.tab === 'enc';
+    $('#panel-enc').classList.toggle('hidden', !isEnc);
+    $('#panel-dec').classList.toggle('hidden', isEnc);
+  });
+});
+
+/* ---------- 解密区子 Tab 切换 ---------- */
+document.querySelectorAll('.sub-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const isPaste = tab.dataset.sub === 'paste';
+    $('#sub-paste').classList.toggle('hidden', !isPaste);
+    $('#sub-file').classList.toggle('hidden', isPaste);
+  });
+});
+
+/* ---------- 模式卡片 ---------- */
+document.querySelectorAll('.mode-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    card.querySelector('input').checked = true;
+  });
+});
+function currentMode(){
+  return document.querySelector('input[name="encMode"]:checked').value;
 }
 
-function filenameFromUrl(url){
+/* ---------- 算法卡片 ---------- */
+document.querySelectorAll('.algo-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.algo-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    card.querySelector('input').checked = true;
+  });
+});
+function currentAlgo(){
+  return document.querySelector('input[name="encAlgo"]:checked').value;
+}
+
+/* ---------- 状态条 ---------- */
+function setStatus(el, text, type){
+  el.classList.remove('hidden','ok','err');
+  if(type) el.classList.add(type);
+  el.innerHTML = type === 'loading'
+    ? '<span class="spinner"></span><span>' + esc(text) + '</span>'
+    : esc(text);
+}
+
+/* =========================================================
+   加密面板
+   ========================================================= */
+let encFile = null;
+const dropZone  = $('#dropZone');
+const fileInput = $('#fileInput');
+const fileChip  = $('#fileChip');
+const encBtn    = $('#encBtn');
+const encStatus = $('#encStatus');
+const encResult = $('#encResult');
+
+dropZone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => {
+  if(e.target.files && e.target.files[0]) pickFile(e.target.files[0]);
+});
+
+['dragenter','dragover'].forEach(ev => {
+  dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add('drag'); });
+});
+['dragleave','drop'].forEach(ev => {
+  dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.remove('drag'); });
+});
+dropZone.addEventListener('drop', e => {
+  const f = e.dataTransfer.files && e.dataTransfer.files[0];
+  if(f) pickFile(f);
+});
+
+function pickFile(f){
+  encFile = f;
+  const isVideo = (f.type || '').startsWith('video');
+  const isImage = (f.type || '').startsWith('image');
+  $('#fcIcon').textContent = isVideo ? '🎬' : isImage ? '🖼️' : '📄';
+  $('#fcName').textContent = f.name;
+  $('#fcSize').textContent = fmtSize(f.size) + ' · ' + (f.type || '未知类型');
+  fileChip.classList.remove('hidden');
+  dropZone.classList.add('hidden');
+  encBtn.disabled = false;
+  encResult.classList.add('hidden');
+  encStatus.classList.add('hidden');
+}
+
+$('#fcRemove').addEventListener('click', () => {
+  encFile = null;
+  fileInput.value = '';
+  fileChip.classList.add('hidden');
+  dropZone.classList.remove('hidden');
+  encBtn.disabled = true;
+  encResult.classList.add('hidden');
+  encStatus.classList.add('hidden');
+});
+
+encBtn.addEventListener('click', async () => {
+  if(!encFile) return;
+  const mode    = currentMode();
+  const algoKey = currentAlgo();
+  const pwd     = $('#encPwd').value;
+  const algo    = ALGOS[algoKey];
+
+  encBtn.disabled = true;
+  encResult.classList.add('hidden');
+  setStatus(encStatus, '准备加密（' + algo.name + '）…', 'loading');
+
   try{
-    const p = new URL(url).pathname;
-    const name = decodeURIComponent(p.split('/').filter(Boolean).pop() || '');
-    return name.replace(/\.(m3u8|mp4|webm|mov|mkv|ts)$/i, '') || '';
-  }catch(e){ return ''; }
-}
-
-/* ==================== 渲染弹窗 ==================== */
-function resetPopover(){
-  const v = $('#previewVideo');
-  v.removeAttribute('src');
-  v.load();
-  $('#dlBtn').classList.remove('ready');
-  $('#dlBtn').disabled = true;
-  $('#dlText').textContent = '正在检测视频源…';
-}
-
-function renderPopover(){
-  if(!current) return;
-
-  $('#vTitle').textContent = current.title;
-  $('#popTitle').innerHTML = '已检测到 <b>视频资源</b>';
-
-  if(current.kind === 'direct'){
-    const v = $('#previewVideo');
-    v.src = current.url;
-    v.load();
-
-    const res = current.height ? `${current.width}×${current.height}` : '未知分辨率';
-    $('#stageBadge').textContent = current.height ? (current.height + 'P') : '视频';
-    $('#vDur').textContent = current.duration ? ('时长 ' + fmtTime(current.duration)) : '时长未知';
-    $('#vSize').textContent = current.size ? fmtSize(current.size) : '大小未知';
-
-    // 下载按钮：探测到可下载就变红
-    if(current.size > 0 || current.duration > 0){
-      $('#dlBtn').classList.add('ready');
-      $('#dlBtn').disabled = false;
-      $('#dlText').textContent = current.corsBlocked
-        ? '下载（可能受跨域限制）'
-        : '下载视频';
-    }else{
-      $('#dlText').textContent = '无法获取文件信息';
-    }
-  }else if(current.kind === 'hls-master'){
-    $('#stageBadge').textContent = 'HLS · ' + current.variants.length + ' 档画质';
-    $('#vDur').textContent = '时长未知';
-    $('#vSize').textContent = '多清晰度';
-    $('#dlBtn').classList.add('ready');
-    $('#dlBtn').disabled = false;
-    $('#dlText').textContent = '下载视频';
-    // 尝试预览最高清（Safari 原生支持，Chrome 需 hls.js）
-    const best = current.variants[0];
-    if(best){
-      const v = $('#previewVideo');
-      v.src = best.url;
-      v.load();
-    }
-  }else if(current.kind === 'hls-media'){
-    $('#stageBadge').textContent = 'HLS · ' + current.segments.length + ' 分片';
-    $('#vDur').textContent = '时长未知';
-    $('#vSize').textContent = '多分片';
-    $('#dlBtn').classList.add('ready');
-    $('#dlBtn').disabled = false;
-    $('#dlText').textContent = '下载视频';
-    const v = $('#previewVideo');
-    v.src = current.url;
-    v.load();
-  }
-}
-
-$('#popClose').addEventListener('click', () => {
-  $('#popover').classList.remove('show');
-  resetPopover();
-});
-
-/* ==================== 画质弹层 ==================== */
-const qualityModal = $('#qualityModal');
-const qualityList  = $('#qualityList');
-let chosenQuality  = null;
-
-$('#dlBtn').addEventListener('click', () => {
-  if($('#dlBtn').disabled || !current) return;
-
-  if(current.kind === 'hls-master'){
-    chosenQuality = current.variants[0];
-    renderQualityList();
-  }else if(current.kind === 'direct'){
-    chosenQuality = { url: current.url, label: current.height ? current.height + 'P' : '原画',
-                      size: current.size, height: current.height || 0 };
-    renderQualityList();
-  }else if(current.kind === 'hls-media'){
-    chosenQuality = { url: current.url, label: '原画', size: 0, height: 0 };
-    renderQualityList();
-  }
-  qualityModal.classList.add('show');
-});
-
-function renderQualityList(){
-  let items = [];
-
-  if(current.kind === 'hls-master'){
-    items = current.variants.map((v, i) => ({
-      key: 'v' + i,
-      label: v.height ? v.height + 'P' : (Math.round(v.bandwidth/1000) + 'kbps'),
-      tag: v.height >= 1080 ? '超清' : v.height >= 720 ? '高清' : v.height >= 480 ? '标清' : '流畅',
-      rec: i === 0,
-      sizeText: v.bandwidth ? ('~' + (v.bandwidth/8/1024/1024).toFixed(1) + ' MB/s') : '—',
-      data: v
-    }));
-  }else{
-    const resLabel = current.height ? current.height + 'P' : '原画';
-    items = [{
-      key: 'v0',
-      label: resLabel,
-      tag: current.height >= 1080 ? '超清' : current.height >= 720 ? '高清' : '原画',
-      rec: true,
-      sizeText: current.size ? fmtSize(current.size) : '—',
-      data: { url: current.url, size: current.size, height: current.height || 0 }
-    }];
-  }
-
-  qualityList.innerHTML = items.map(it => `
-    <button class="q-item ${chosenQuality === it.data ? 'selected' : ''}" data-key="${it.key}">
-      <span class="q-radio"></span>
-      <span class="q-label">${esc(it.label)}</span>
-      <span class="q-tag">${esc(it.tag)}</span>
-      ${it.rec ? '<span class="q-rec">推荐</span>' : ''}
-      <span class="q-size">${esc(it.sizeText)}</span>
-    </button>
-  `).join('');
-
-  qualityList.querySelectorAll('.q-item').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const it = items.find(x => x.key === btn.dataset.key);
-      chosenQuality = it.data;
-      qualityList.querySelectorAll('.q-item').forEach(b =>
-        b.classList.toggle('selected', b === btn));
-      updateQualityHint(it);
+    const t0 = performance.now();
+    const { bytes, meta } = await doEncrypt(encFile, mode, pwd, algoKey, txt => {
+      setStatus(encStatus, txt, 'loading');
     });
-  });
 
-  updateQualityHint(items.find(it => it.data === chosenQuality) || items[0]);
-}
+    setStatus(encStatus, '生成乱码中…', 'loading');
 
-function updateQualityHint(it){
-  if(!it) return;
-  const hint = $('#qualitySizeHint');
-  if(it.sizeText && it.sizeText !== '—') hint.textContent = it.sizeText;
-  else hint.textContent = '';
-}
+    const tooLarge = bytes.length > MAX_B64;
+    const garbledText = tooLarge ? '' : PREFIX + await bytesToB64url(bytes);
+    const cost = ((performance.now() - t0) / 1000).toFixed(1);
 
-$('#modalClose').addEventListener('click', () => qualityModal.classList.remove('show'));
-qualityModal.addEventListener('click', e => {
-  if(e.target === qualityModal) qualityModal.classList.remove('show');
+    renderEncryptResult(bytes, garbledText, meta, cost, tooLarge);
+
+    setStatus(encStatus, '✅ 加密完成（' + algo.name + '），用时 ' + cost + ' 秒', 'ok');
+  }catch(err){
+    console.error(err);
+    setStatus(encStatus, '❌ 加密失败：' + (err.message || err), 'err');
+  }finally{
+    encBtn.disabled = false;
+  }
 });
 
-$('#confirmDownload').addEventListener('click', () => {
-  qualityModal.classList.remove('show');
-  const threads = parseInt($('#threadSelect').value, 10) || 8;
-  startTask(chosenQuality, threads);
-  switchView('manager');
-});
+function renderEncryptResult(bytes, garbledText, meta, cost, tooLarge){
+  const isPrivate = meta.m === 'private';
+  const modeBadge = isPrivate
+    ? '<span class="badge prv">🔐 私密模式</span>'
+    : '<span class="badge pub">🌐 公开模式</span>';
+  const pwdBadge  = meta.p ? '<span class="badge">🔑 已设密码</span>' : '<span class="badge">🔓 无密码</span>';
+  const algoBadge = '<span class="badge algo">🔧 ' + esc(meta.aName) + '</span>';
 
-/* ==================== 下载任务 ==================== */
-const taskList  = $('#taskList');
-const taskBadge = $('#taskBadge');
-const taskCount = $('#taskCount');
-
-function updateBadge(){
-  const n = tasks.length;
-  taskBadge.textContent = n;
-  taskBadge.classList.toggle('on', n > 0);
-  taskCount.textContent = n + ' 个任务';
-}
-
-function startTask(quality, threads){
-  const isHls = current.kind === 'hls-master' || current.kind === 'hls-media';
-
-  const task = {
-    id: 't' + Date.now() + '_' + Math.floor(Math.random()*1000),
-    title: current.title,
-    quality: quality.label || '原画',
-    size: quality.size || 0,
-    loaded: 0,
-    speed: 0,
-    threads,
-    status: 'downloading',
-    blob: null,
-    ext: isHls ? 'ts' : guessExt(current.mime, current.url),
-    abort: false,
-    refs: null
-  };
-
-  tasks.push(task);
-  renderTask(task);
-  updateBadge();
-
-  if(current.kind === 'hls-master' || current.kind === 'hls-media'){
-    downloadHLS(task, quality.url);
+  let garbledBlock;
+  if(tooLarge){
+    garbledBlock = `<div class="code-box">文件过大（加密后 ${fmtSize(bytes.length)}），
+      已超出网页内联显示的安全范围。<br><br>
+      请点击下方「下载乱码文件（.hcat）」，把文件直接发给朋友即可。</div>`;
   }else{
-    downloadDirect(task, quality.url);
+    const preview = garbledText.slice(0, 3000);
+    const truncated = garbledText.length > 3000;
+    garbledBlock = `<div class="code-box" id="garbledBox">${esc(preview)}${truncated ? '\n…（已截断显示，复制按钮会复制完整内容）' : ''}</div>`;
   }
-}
 
-function guessExt(mime, url){
-  if(mime && mime.includes('webm')) return 'webm';
-  if(mime && mime.includes('quicktime')) return 'mov';
-  if(mime && mime.includes('matroska')) return 'mkv';
-  const m = url.match(/\.(mp4|webm|mov|mkv|ts)(\?|$)/i);
-  return m ? m[1].toLowerCase() : 'mp4';
-}
+  const copyBtn = tooLarge
+    ? ''
+    : `<button class="btn btn-ghost" id="copyGarbled" style="margin-top:12px;">📋 复制完整乱码</button>`;
 
-function renderTask(task){
-  const empty = taskList.querySelector('.empty');
-  if(empty) empty.remove();
-
-  const el = document.createElement('div');
-  el.className = 'task';
-  el.dataset.id = task.id;
-  el.innerHTML = `
-    <div class="task-top">
-      <div class="task-thumb">▶</div>
-      <div class="task-info">
-        <div class="task-name">${esc(task.title)}</div>
-        <div class="task-sub">
-          <span class="q-chip">${esc(task.quality)}</span>
-          <span class="file-size">${task.size ? fmtSize(task.size) : '计算中…'}</span>
-        </div>
+  encResult.innerHTML = `
+    <div class="result-card">
+      <div>${modeBadge}${pwdBadge}${algoBadge}<span class="badge ok">✅ 加密成功</span></div>
+      ${garbledBlock}
+      ${copyBtn}
+      <button class="btn btn-ghost" id="downloadHcat">⬇️ 下载乱码文件（.hcat）</button>
+      <div class="result-info">
+        <b>文件：</b>${esc(meta.n)}<br>
+        <b>原始大小：</b>${fmtSize(meta.s)}<br>
+        <b>加密体积：</b>${fmtSize(bytes.length)}<br>
+        <b>加密算法：</b><span class="algo-highlight">${esc(meta.aName)}</span><br>
+        <b>加密模式：</b>${isPrivate ? '私密模式（绑定本设备）' : '公开模式（同款网站可解）'}<br>
+        <b>识别码：</b>${esc(meta.id)}<br>
+        <b>用时：</b>${cost} 秒
       </div>
-      <div class="task-status">下载中</div>
+      ${isPrivate ? '<div class="hint" style="margin-top:12px;color:#c084fc;">🔐 该文件已绑定本设备，请勿清除浏览器数据，否则将无法再次解密。</div>' : ''}
     </div>
-    <div class="bar"><div class="bar-fill"></div></div>
-    <div class="task-foot">
-      <span class="speed">连接中…</span>
-      <span class="pct">0%</span>
-    </div>
-    <button class="export-btn" hidden>⬇ 导出到本地</button>
   `;
+  encResult.classList.remove('hidden');
 
-  task.refs = {
-    barFill: el.querySelector('.bar-fill'),
-    speed: el.querySelector('.speed'),
-    pct: el.querySelector('.pct'),
-    status: el.querySelector('.task-status'),
-    exportBtn: el.querySelector('.export-btn'),
-    thumb: el.querySelector('.task-thumb'),
-    fileSize: el.querySelector('.file-size')
-  };
-
-  task.refs.exportBtn.addEventListener('click', () => exportTask(task));
-  taskList.prepend(el);
-}
-
-/* ---- 直链多线程下载 ---- */
-async function downloadDirect(task, url){
-  const startTime = Date.now();
-  let lastUI = 0;
-
-  const updateUI = (force) => {
-    const now = Date.now();
-    if(!force && now - lastUI < 150) return;
-    lastUI = now;
-    const elapsed = Math.max(0.2, (now - startTime) / 1000);
-    task.speed = task.loaded / elapsed;
-
-    const pct = task.size ? Math.min(100, task.loaded / task.size * 100) : 0;
-    task.refs.barFill.style.width = (task.size ? pct : 30) + '%';
-    task.refs.pct.textContent = task.size ? (pct.toFixed(1) + '%') : fmtSize(task.loaded);
-    task.refs.speed.textContent = fmtSpeed(task.speed);
-    if(task.size) task.refs.fileSize.textContent = fmtSize(task.size);
-  };
-
-  try{
-    if(task.size && current.ranges && task.threads > 1){
-      // ---- 多线程分片 ----
-      const total = task.size;
-      const n = Math.min(task.threads, Math.ceil(total / (256 * 1024)) || 1);
-      const chunk = Math.ceil(total / n);
-      const buffers = new Array(n);
-      let finished = 0;
-
-      const jobs = [];
-      for(let i = 0; i < n; i++){
-        const start = i * chunk;
-        const end = Math.min(start + chunk, total) - 1;
-        if(start > end){ buffers[i] = new Uint8Array(0); finished++; continue; }
-
-        jobs.push((async () => {
-          const res = await fetch(url, { headers: { Range: `bytes=${start}-${end}` } });
-          if(res.status !== 206 && res.status !== 200){
-            throw new Error('分片请求失败 ' + res.status);
-          }
-          // 服务器忽略 Range，返回完整文件 → 只能取第一块
-          if(res.status === 200 && i > 0){
-            throw new Error('服务器不支持分片');
-          }
-          const reader = res.body.getReader();
-          const parts = [];
-          let recv = 0;
-          while(true){
-            const { done, value } = await reader.read();
-            if(done) break;
-            parts.push(value);
-            recv += value.length;
-            task.loaded += value.length;
-            updateUI();
-          }
-          const buf = new Uint8Array(recv);
-          let off = 0;
-          for(const p of parts){ buf.set(p, off); off += p.length; }
-          buffers[i] = buf;
-          finished++;
-        })());
+  if(!tooLarge){
+    $('#copyGarbled').addEventListener('click', async function(){
+      try{
+        await navigator.clipboard.writeText(garbledText);
+        this.textContent = '✅ 已复制到剪贴板';
+      }catch(e){
+        const ta = document.createElement('textarea');
+        ta.value = garbledText;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try{ document.execCommand('copy'); this.textContent = '✅ 已复制到剪贴板'; }
+        catch(e2){ this.textContent = '❌ 复制失败，请手动选择复制'; }
+        document.body.removeChild(ta);
       }
-
-      await Promise.all(jobs);
-      task.blob = new Blob(buffers, { type: current.mime || 'video/mp4' });
-    }else{
-      // ---- 单线程流式 ----
-      const res = await fetch(url);
-      if(!res.ok) throw new Error('请求失败 ' + res.status);
-      const len = parseInt(res.headers.get('Content-Length'), 10);
-      if(len && !task.size){ task.size = len; }
-
-      const reader = res.body.getReader();
-      const parts = [];
-      while(true){
-        const { done, value } = await reader.read();
-        if(done) break;
-        parts.push(value);
-        task.loaded += value.length;
-        updateUI();
-      }
-      task.blob = new Blob(parts, { type: current.mime || 'video/mp4' });
-    }
-
-    updateUI(true);
-    finishTask(task);
-  }catch(err){
-    console.error(err);
-    failTask(task, err.message || '下载失败');
+      setTimeout(() => { this.textContent = '📋 复制完整乱码'; }, 2200);
+    });
   }
-}
 
-/* ---- HLS(m3u8) 下载：并发拉取 ts 分片 ---- */
-async function downloadHLS(task, playlistUrl){
-  const startTime = Date.now();
-  let lastUI = 0;
-  const updateUI = (force) => {
-    const now = Date.now();
-    if(!force && now - lastUI < 150) return;
-    lastUI = now;
-    const elapsed = Math.max(0.2, (now - startTime) / 1000);
-    task.speed = task.loaded / elapsed;
-    task.refs.speed.textContent = fmtSpeed(task.speed);
-    task.refs.pct.textContent = fmtSize(task.loaded);
-    task.refs.fileSize.textContent = '已下载 ' + fmtSize(task.loaded);
-  };
-
-  try{
-    // 1. 拉取 media playlist
-    const res = await fetch(playlistUrl);
-    if(!res.ok) throw new Error('m3u8 请求失败 ' + res.status);
-    const text = await res.text();
-    const segments = resolveSegments(text, playlistUrl);
-    if(!segments.length) throw new Error('未找到分片');
-
-    task.refs.fileSize.textContent = segments.length + ' 个分片';
-
-    // 2. 并发下载分片（保持顺序）
-    const buffers = new Array(segments.length);
-    let cursor = 0;
-    const concurrency = Math.min(task.threads, 8, segments.length);
-
-    const worker = async () => {
-      while(true){
-        const i = cursor++;
-        if(i >= segments.length) return;
-        const r = await fetch(segments[i]);
-        if(!r.ok) throw new Error('分片 ' + i + ' 失败');
-        const buf = await r.arrayBuffer();
-        buffers[i] = new Uint8Array(buf);
-        task.loaded += buf.byteLength;
-        updateUI();
-      }
-    };
-
-    await Promise.all(Array.from({ length: concurrency }, worker));
-
-    updateUI(true);
-    task.blob = new Blob(buffers, { type: 'video/mp2t' });
-    task.ext = 'ts';
-    finishTask(task);
-  }catch(err){
-    console.error(err);
-    failTask(task, err.message || 'HLS 下载失败');
-  }
-}
-
-function finishTask(task){
-  task.status = 'done';
-  const r = task.refs;
-  r.barFill.style.width = '100%';
-  r.pct.textContent = '100%';
-  r.speed.textContent = '完成 · ' + fmtSize(task.blob.size) + ' · 均速 ' + fmtSpeed(task.speed);
-  r.status.textContent = '已完成';
-  r.thumb.textContent = '✓';
-  r.exportBtn.hidden = false;
-  r.exportBtn.closest('.task').classList.add('done');
-  toast('「' + task.title + '」下载完成，可导出');
-}
-
-function failTask(task, msg){
-  task.status = 'error';
-  const r = task.refs;
-  r.status.textContent = '失败';
-  r.speed.textContent = msg;
-  r.thumb.textContent = '✕';
-  r.barFill.closest('.task').classList.add('error');
-  toast('下载失败：' + msg, 4000);
-}
-
-/* ==================== 导出 ==================== */
-function exportTask(task){
-  if(!task.blob){ toast('文件未就绪'); return; }
-  const url = URL.createObjectURL(task.blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${task.title}_${task.quality}.${task.ext}`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 8000);
-  toast('已开始导出：' + a.download);
-}
-
-/* ==================== 清除 ==================== */
-$('#clearDone').addEventListener('click', () => {
-  const ids = tasks.filter(t => t.status === 'done' || t.status === 'error').map(t => t.id);
-  if(!ids.length){ toast('暂无已完成的任务'); return; }
-  ids.forEach(id => {
-    const el = taskList.querySelector(`.task[data-id="${id}"]`);
-    if(el) el.remove();
+  $('#downloadHcat').addEventListener('click', function(){
+    const blob = new Blob([bytes], { type: 'application/octet-stream' });
+    const url  = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (meta.n || 'file') + '.hcat';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+    this.textContent = '✅ 已开始下载';
+    setTimeout(() => { this.textContent = '⬇️ 下载乱码文件（.hcat）'; }, 2200);
   });
-  tasks = tasks.filter(t => t.status !== 'done' && t.status !== 'error');
-  updateBadge();
-  if(!tasks.length){
-    taskList.innerHTML = `<div class="empty"><div class="big">📥</div>暂无下载任务<br>去首页粘贴链接开始下载吧</div>`;
-  }
-  toast('已清除 ' + ids.length + ' 个任务');
+}
+
+/* =========================================================
+   解密面板
+   ========================================================= */
+const dropZone2  = $('#dropZone2');
+const fileInput2 = $('#fileInput2');
+const garbledEl  = $('#garbled');
+const decBtn     = $('#decBtn');
+const decStatus  = $('#decStatus');
+const decResult  = $('#decResult');
+
+let pendingBytes = null;
+
+dropZone2.addEventListener('click', () => fileInput2.click());
+fileInput2.addEventListener('change', async e => {
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  await loadHcatFile(f);
 });
+
+['dragenter','dragover'].forEach(ev => {
+  dropZone2.addEventListener(ev, e => { e.preventDefault(); dropZone2.classList.add('drag'); });
+});
+['dragleave','drop'].forEach(ev => {
+  dropZone2.addEventListener(ev, e => { e.preventDefault(); dropZone2.classList.remove('drag'); });
+});
+dropZone2.addEventListener('drop', async e => {
+  const f = e.dataTransfer.files && e.dataTransfer.files[0];
+  if(f) await loadHcatFile(f);
+});
+
+async function loadHcatFile(f){
+  setStatus(decStatus, '读取乱码文件…', 'loading');
+  try{
+    const buf = await f.arrayBuffer();
+    pendingBytes = new Uint8Array(buf);
+    dropZone2.innerHTML = `
+      <div class="dz-icon">✅</div>
+      <div class="dz-title">已载入：${esc(f.name)}</div>
+      <div class="dz-sub">${fmtSize(f.size)} · 点击可重新选择文件</div>
+    `;
+    setStatus(decStatus, '✅ 已载入 ' + f.name + '，点击「解密 / 播放」', 'ok');
+  }catch(err){
+    setStatus(decStatus, '❌ 读取失败：' + err.message, 'err');
+  }
+}
+
+/* 用户在粘贴框里输入时，忽略已载入的文件 */
+garbledEl.addEventListener('input', () => {
+  if(pendingBytes){
+    pendingBytes = null;
+    /* 恢复拖拽区初始状态 */
+    dropZone2.innerHTML = `
+      <div class="dz-icon">📥</div>
+      <div class="dz-title">点击选择，或拖入 .hcat 文件</div>
+      <div class="dz-sub">支持 .hcat 格式的乱码文件</div>
+    `;
+  }
+});
+
+decBtn.addEventListener('click', async () => {
+  decResult.classList.add('hidden');
+  let bytes = pendingBytes;
+
+  if(!bytes){
+    const raw = garbledEl.value.trim();
+    if(!raw){
+      setStatus(decStatus, '❌ 请先粘贴乱码，或上传 .hcat 文件。', 'err');
+      return;
+    }
+    let b64 = raw;
+    const idx = b64.indexOf(PREFIX);
+    if(idx >= 0) b64 = b64.slice(idx + PREFIX.length);
+    b64 = b64.replace(/[^A-Za-z0-9\-_+/=]/g, '');
+    try{
+      bytes = b64urlToBytes(b64);
+    }catch(err){
+      setStatus(decStatus, '❌ 乱码格式不正确，无法识别。', 'err');
+      return;
+    }
+  }
+
+  decBtn.disabled = true;
+  setStatus(decStatus, '解密中…', 'loading');
+
+  try{
+    const { plain, meta } = await doDecrypt(bytes, $('#decPwd').value);
+    renderDecryptResult(plain, meta);
+    setStatus(decStatus, '✅ 解密成功（' + (meta.aName || '未知算法') + '）', 'ok');
+  }catch(err){
+    console.error(err);
+    setStatus(decStatus, '❌ ' + (err.message || '解密失败'), 'err');
+  }finally{
+    decBtn.disabled = false;
+  }
+});
+
+function renderDecryptResult(plain, meta){
+  const type = meta.t || 'application/octet-stream';
+  const blob = new Blob([plain], { type });
+  const url  = URL.createObjectURL(blob);
+
+  const isImage = type.startsWith('image/');
+  const isVideo = type.startsWith('video/');
+
+  let preview = '';
+  if(isImage){
+    preview = `<div class="preview"><img src="${url}" alt="${esc(meta.n)}"></div>`;
+  }else if(isVideo){
+    preview = `<div class="preview"><video src="${url}" controls playsinline preload="metadata"></video></div>`;
+  }
+
+  const modeBadge = meta.m === 'private'
+    ? '<span class="badge prv">🔐 私密模式</span>'
+    : '<span class="badge pub">🌐 公开模式</span>';
+
+  const algoName = meta.aName || (meta.a && ALGOS[meta.a] ? ALGOS[meta.a].name : '未知算法');
+  const algoBadge = '<span class="badge algo">🔧 ' + esc(algoName) + '</span>';
+
+  decResult.innerHTML = `
+    <div class="result-card">
+      <div><span class="badge ok">✅ 解密成功</span>${modeBadge}${algoBadge}</div>
+      ${preview}
+      <div class="result-info">
+        <b>文件名：</b>${esc(meta.n)}<br>
+        <b>类型：</b>${esc(type)}<br>
+        <b>大小：</b>${fmtSize(plain.length)}<br>
+        <b>加密算法：</b><span class="algo-highlight">${esc(algoName)}</span><br>
+        <b>加密模式：</b>${meta.m === 'private' ? '私密模式（绑定原设备）' : '公开模式'}<br>
+        <b>是否设置密码：</b>${meta.p ? '是' : '否'}<br>
+        <b>识别码：</b>${esc(meta.id || '—')}<br>
+        <b>加密时间：</b>${meta.ts ? new Date(meta.ts).toLocaleString('zh-CN') : '—'}
+      </div>
+      <a class="btn btn-ghost" id="saveFile" download="${esc(meta.n)}">⬇️ 保存到本地</a>
+    </div>
+  `;
+  decResult.classList.remove('hidden');
+
+  $('#saveFile').href = url;
+}
+
+/* =========================================================
+   启动检查
+   ========================================================= */
+if(!(window.crypto && window.crypto.subtle)){
+  document.body.innerHTML =
+    '<div style="padding:40px;text-align:center;color:#e8edf7;font-family:sans-serif;line-height:2;">' +
+    '<h2>⚠️ 当前环境不支持 Web Crypto</h2>' +
+    '<p>请使用 Chrome / Edge / Firefox / Safari 最新版打开本页面。<br>' +
+    '如果通过 http 访问，请改用 https 或直接本地打开文件。</p></div>';
+}
+
+})();
 </script>
 </body>
-      </html>
+          </html>
